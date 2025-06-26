@@ -1,0 +1,150 @@
+   <!DOCTYPE html>
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacie WUTANG</title>
+    <!-- ====MATERIAL ICON=== -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
+    rel="stylesheet">
+    <!-----BOOTSTRAP
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">---->
+    <!-- ==== STYLESHEET === -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="htp" rel="stylesheet">
+   </head>
+
+   <body>
+      <div class="container">
+         <aside>
+            <div class="top">
+               <div class="logo">
+                  <img src="/imgs/pharmacy.png">
+                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
+               </div>
+            </div>
+            <div class="close" id="close-btn">
+               <span class="material-icons-sharp">close</span>
+            </div>
+            <div class="sidebar">
+               <a th:href="@{/home}">
+                  <span><img src="/imgs/grid_view.svg"></span>
+                  <h3>Accueil</h3>
+               </a>
+               
+               <a th:href="@{/drugs}">
+                  <span><img src="/imgs/medication_liquid.svg"></span>
+                  <h3>Médicaments</h3>
+               </a>
+   
+               <a th:href="@{/stock}">
+                  <span><img src="/imgs/inventory_2.svg"></span>
+                  <h3>Inventaire</h3>
+               </a>
+   
+               <a th:href="@{/sales}">
+                  <span><img src="/imgs/paid.svg"></span>
+                  <h3>Ventes</h3>
+               </a>
+   
+               <a th:href="@{/purchases}">
+                  <span><img src="/imgs/inventory.svg"></span>
+                  <h3>Ravitaillement</h3>
+               </a>
+   
+               <a th:href="@{/orders}">
+                  <span><img src="/imgs/fact_check.svg"></span>
+                  <h3>commandes</h3>
+               </a>
+   
+               <a th:href="@{/suppliers}">
+                  <span><img src="/imgs/person_outline.svg"></span>
+                  <h3>Fournisseurs</h3>
+               </a>
+   
+               <a th:href="@{/settings}" class="active">
+                  <span><img src="/imgs/settings.svg"></span>
+                  <h3>Paramètres</h3>
+               </a>
+   
+               <form th:action="@{/logout}" method="post">
+                  <button type="submit">
+                     <span><img src="/imgs/logout.svg"></span>
+                     <h3>Logout</h3>
+                  </button>
+               </form>
+            </div>
+         </aside>
+         <!---------------------- END OF ASIDE -------------------------->
+         <main>
+            <h1>Historique des actions</h1>
+            <div class="insigths">
+            </div>
+            <!-----------------END OF FORM------------------>
+            <div class="recent-orders">
+               <div class="title-with-pack">
+                  <a th:href="@{/settings}" class="back-icon">
+                     <span><img src="/imgs/arrow_back.svg" alt=""></span>
+                  </a>
+               </div>
+            </div>
+            <div class="history-container">
+               <table class="table">
+                  <thead>
+                     <tr>
+                        <th>IdAction</th>
+                        <th>Date/Heure</th>
+                        <th>Utilisateur</th>
+                        <th>Action</th>
+                        <th>Table</th>
+                        <th>ID</th>
+                        <th>Détails</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr th:each="log : ${historiques}">
+                        <td th:text="${log.idAction}"></td>
+                        <td th:text="${#temporals.format(log.dateAction, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${log.utilisateur}"></td>
+                        <td th:text="${log.typeAction}"></td>
+                        <td th:text="${log.tableCible}"></td>
+                        <td th:text="${log.idEnregistrement}"></td>
+                        <td>
+                           <a th:href="@{/historyDetails/{id}(id=${log.idAction})}">
+                              <h3>Voir détails</h3>
+                              <span class="navigate-icon">
+                                 <!--<img src="/imgs/navigate_next.svg" alt="">-->
+                              </span>
+                           </a>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </main>
+         <!---------------------- END OF MAIN -------------------------->
+         <div class="rigth">
+            <div class="top">
+               <button id="menu-btn">
+                  <span class="material-icons-sharp">menu</span>
+               </button>
+               <div class="theme-toggler">
+                  <span class="active"><img src="/imgs/light_mode.svg"></span>
+                  <span><img src="/imgs/dark_mode.svg"></span>
+               </div>
+               <div class="profile">
+                  <div class="info">
+                     <p><b th:text="${loggedUser.nomUtilisateur}">Nom</b></p>
+                     <small class="text-muted" th:text="${loggedUser.type}">Role</small>
+                  </div>
+                  <div class="profile-photo">
+                     <img src="/imgs/profile-1.jpg" alt="">
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <script src="/js/main.js" defer></script>
+   </body>
+   </html>

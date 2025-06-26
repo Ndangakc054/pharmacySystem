@@ -1,0 +1,291 @@
+   <!DOCTYPE html>
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacie WUTANG</title>
+    <!-- ==== STYLESHEET === -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+   </head>
+
+   <body>
+      <div class="container">
+         <aside>
+            <div class="top">
+               <div class="logo">
+                  <img src="/imgs/pharmacy.png">
+                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
+               </div>
+            </div>
+            <div class="close" id="close-btn">
+               <span class="material-icons-sharp">close</span>
+            </div>
+            <div class="sidebar">
+               <a href="#" class="active">
+                  <span><img src="/imgs/grid_view.svg"></span>
+                  <h3>Accueil</h3>
+               </a>
+               
+               <a th:href="@{/drugs_user}">
+                  <span><img src="/imgs/medication_liquid.svg"></span>
+                  <h3>Médicaments</h3>
+               </a>
+
+               <a th:href="@{/stock_user}">
+                  <span><img src="/imgs/inventory_2.svg"></span>
+                  <h3>Inventaire</h3>
+               </a>
+
+               <a th:href="@{/sales_user}">
+                  <span><img src="/imgs/paid.svg"></span>
+                  <h3>Ventes</h3>
+               </a>
+
+               <a th:href="@{/purchases_user}">
+                  <span><img src="/imgs/inventory.svg"></span>
+                  <h3>Ravitaillement</h3>
+               </a>
+
+               <a th:href="@{/orders_user}">
+                  <span><img src="/imgs/fact_check.svg"></span>
+                  <h3>commandes</h3>
+               </a>
+
+               <a th:href="@{/suppliers_user}">
+                  <span><img src="/imgs/person_outline.svg"></span>
+                  <h3>Fournisseurs</h3>
+               </a>
+
+               <form th:action="@{/logout}" method="post">
+                  <button type="submit">
+                     <span><img src="/imgs/logout.svg"></span>
+                     <h3>Logout</h3>
+                  </button>
+               </form>
+            </div>
+         </aside>
+         <!---------------------- END OF ASIDE -------------------------->
+         <main>
+            <h1>Accuiel</h1>
+            <div class="date">
+               <input type="date">
+            </div>
+            <!--<div class="insigths">
+               <div class="sales">
+                  <span class="material-icons-sharp">analytics</span>
+                  <div class="middle">
+                     <div class="left">
+                        <h3>Total Sales</h3>
+                        <h1>$25.024</h1>
+                     </div>
+                     <div class="progress">
+                        <svg>
+                           <circle cx='38' cy='38' r='36'></circle>
+                        </svg>
+                        <div class="number">
+                           <p>81%</p>
+                        </div>
+                     </div>
+                  </div>
+                  <small class="text-muted">Last 24 Hours</small>
+               </div>
+               <!---------------------- END OF SALES -------------------------->
+               <!--<div class="expenses">
+                  <span class="material-icons-sharp">bar_chart</span>
+                  <div class="middle">
+                     <div class="left">
+                        <h3>Total Expenses</h3>
+                        <h1>$14.160</h1>
+                     </div>
+                     <div class="progress">
+                        <svg>
+                           <circle cx='38' cy='38' r='36'></circle>
+                        </svg>
+                        <div class="number">
+                           <p>62%</p>
+                        </div>
+                     </div>
+                  </div>
+                  <small class="text-muted">Last 24 Hours</small>
+               </div>
+               <!---------------------- END OF EXPENSE -------------------------->
+               <!--<div class="income">
+                  <span class="material-icons-sharp">stacked_line_chart</span>
+                  <div class="middle">
+                     <div class="left">
+                        <h3>Total income</h3>
+                        <h1>$25.024</h1>
+                     </div>
+                     <div class="progress">
+                        <svg>
+                           <circle cx='38' cy='38' r='36'></circle>
+                        </svg>
+                        <div class="number">
+                           <p>44%</p>
+                        </div>
+                     </div>
+                  </div>
+                  <small class="text-muted">Last 24 Hours</small>
+               </div>
+               <!---------------------- END OF INCOME -------------------------->
+            <!--</div> --->
+            <!---------------------- END OF INSIGTHS -------------------------->
+            <div class="recent-orders">
+               <h2>Recent Orders</h2>
+               <table>
+                  <thead>
+                     <tr>
+                        <th>Product Name</th>
+                        <th>Product Number</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr>
+                        <td>Fordable Mini Drone</td>
+                        <td>85631</td>
+                        <td>Due</td>
+                        <td class="warning">Pending</td>
+                        <td class="primary">Details</td>
+                     </tr>
+                  </tbody>
+                  <tr>
+                     <td>Fordable Mini Drone</td>
+                     <td>85631</td>
+                     <td>Due</td>
+                     <td class="warning">Pending</td>
+                     <td class="primary">Details</td>
+                  </tr>
+                  <tr>
+                     <td>Fordable Mini Drone</td>
+                     <td>85631</td>
+                     <td>Due</td>
+                     <td class="warning">Pending</td>
+                     <td class="primary">Details</td>
+                  </tr>
+                  <tr>
+                     <td>Fordable Mini Drone</td>
+                     <td>85631</td>
+                     <td>Due</td>
+                     <td class="warning">Pending</td>
+                     <td class="primary">Details</td>
+                  </tr>
+                  <tr>
+                     <td>Fordable Mini Drone</td>
+                     <td>85631</td>
+                     <td>Due</td>
+                     <td class="warning">Pending</td>
+                     <td class="primary">Details</td>
+                  </tr>
+               </table>
+               <a href="#">Show All</a>
+            </div>
+         </main>
+         <!---------------------- END OF MAIN -------------------------->
+         <div class="rigth">
+            <div class="top">
+               <button id="menu-btn">
+                  <span class="material-icons-sharp">menu</span>
+               </button>
+               <div class="theme-toggler">
+                  <span><img src="/imgs/light_mode.svg"></span>
+                  <span><img src="/imgs/dark_mode.svg"></span>
+               </div>
+               <div class="profile">
+                  <div class="info" th:if="${loggedUser != null}">
+                     <p><b th:text="${loggedUser.nomUtilisateur}">Nom</b></p>
+                     <small class="text-muted" th:text="${loggedUser.type}">Role</small>
+                  </div>
+                  <div class="profile-photo">
+                     <img src="/imgs/profile-1.jpg" alt="">
+                  </div>
+               </div>
+            </div>
+            <!-- END OF TOP -->
+            <div class="recent-updates">
+               <h2>Recent Updates</h2>
+               <div class="updates">
+                  <div class="profile-photo">
+                     <img src="/imgs/1.jpg" alt="">
+                  </div>
+                  <div class="messages">
+                     <p><b>Unkown excute the orders succefully</b></p>
+                     <small class="text-muted">2 Minutes Ago</small>
+                  </div>
+               </div>
+               <div class="updates">
+                  <div class="profile-photo">
+                     <img src="/imgs/profile-1.jpg" alt="">
+                  </div>
+                  <div class="messages">
+                     <p><b>Unkown excute the orders succefully</b></p>
+                     <small class="text-muted">2 Minutes Ago</small>
+                  </div>
+               </div>
+               <div class="updates">
+                  <div class="profile-photo">
+                     <img src="/imgs/profile-2.jpg" alt="">
+                  </div>
+                  <div class="messages">
+                     <p><b>Unkown excute the orders succefully</b></p>
+                     <small class="text-muted">2 Minutes Ago</small>
+                  </div>
+               </div>
+             </div>
+                       <!----------- END OF RECENT UPDATES -------->
+          <div class="sales-analytics">
+            <h2>Sales Analytics</h2>
+            <div class="item online">
+               <div class="icon">
+                  <span class="material-icons-sharp">shopping_cart</span>
+               </div>
+               <div class="right">
+                  <div class="info">
+                     <h3>ONLINE ORDERS</h3>
+                     <small class="text-muted">Last 24 Hours</small>
+                  </div>
+                  <h5 class="success">+39</h5>
+                  <h3>3849</h3>
+               </div>
+            </div>
+            <div class="item offline">
+               <div class="icon">
+                  <span class="material-icons-sharp">local_mall</span>
+               </div>
+               <div class="right">
+                  <div class="info">
+                     <h3>OFFLINE ORDERS</h3>
+                     <small class="text-muted">Last 24 Hours</small>
+                  </div>
+                  <h5 class="success">-17%</h5>
+                  <h3>1100</h3>
+               </div>
+            </div>
+            <div class="item customers">
+               <div class="icon">
+                  <span class="material-icons-sharp">person</span>
+               </div>
+               <div class="right">
+                  <div class="info">
+                     <h3>NEW CUSTOMERS</h3>
+                     <small class="text-muted">Last 24 Hours</small>
+                  </div>
+                  <h5 class="success">+39</h5>
+                  <h3>849</h3>
+               </div>
+            </div>
+            <div class="item add-product">
+               <div>
+                  <span class="material-icons-sharp">add</span>
+                  <h3>Add Product</h3>
+               </div>
+            </div>
+         </div>
+       </div>
+      </div>
+      <!--<script src="./assets/js/orders.js"></script>-->
+      <script th:src="@{/js/main.js}"></script>
+   </body>
+   </html>

@@ -1,0 +1,162 @@
+   <!DOCTYPE html>
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacie WUTANG</title>
+    <!-- ====MATERIAL ICON=== -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
+    rel="stylesheet">
+    <!-----BOOTSTRAP
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">---->
+    <!-- ==== STYLESHEET === -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="htp" rel="stylesheet">
+   </head>
+
+   <body>
+      <div class="container">
+         <aside>
+            <div class="top">
+               <div class="logo">
+                  <img src="/imgs/pharmacy.png">
+                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
+               </div>
+            </div>
+            <div class="close" id="close-btn">
+               <span class="material-icons-sharp">close</span>
+            </div>
+            <div class="sidebar">
+               <a th:href="@{/home_user}">
+                  <span><img src="/imgs/grid_view.svg"></span>
+                  <h3>Accueil</h3>
+               </a>
+               
+               <a th:href="@{/drugs_user}">
+                  <span><img src="/imgs/medication_liquid.svg"></span>
+                  <h3>Médicaments</h3>
+               </a>
+   
+               <a th:href="@{/stock_user}" class="active">
+                  <span><img src="/imgs/inventory_2.svg"></span>
+                  <h3>Inventaire</h3>
+               </a>
+   
+               <a th:href="@{/sales_user}">
+                  <span><img src="/imgs/paid.svg"></span>
+                  <h3>Ventes</h3>
+               </a>
+   
+               <a th:href="@{/purchases_user}">
+                  <span><img src="/imgs/inventory.svg"></span>
+                  <h3>Ravitaillement</h3>
+               </a>
+   
+               <a th:href="@{/orders_user}">
+                  <span><img src="/imgs/fact_check.svg"></span>
+                  <h3>commandes</h3>
+               </a>
+   
+               <a th:href="@{/suppliers_user}">
+                  <span><img src="/imgs/person_outline.svg"></span>
+                  <h3>Fournisseurs</h3>
+               </a>
+   
+               <form th:action="@{/logout}" method="post">
+                  <button type="submit">
+                     <span><img src="/imgs/logout.svg"></span>
+                     <h3>Logout</h3>
+                  </button>
+               </form>
+            </div>
+         </aside>
+         <!---------------------- END OF ASIDE -------------------------->
+         <main>
+            <h1>Expiration des médicaments</h1>
+            <div class="date">
+               <input type="date">
+            </div>
+            <div class="insigths">    
+            </div>
+            <div th:if="${message}" th:classappend="${status == 'success'} ? 'alert alert-success text-center' : 'alert alert-danger text-center'">
+               [[${message}]]
+            </div>
+         <!-----------------END OF FORM------------------>
+            <div class="expiry-container">
+               <div class="title-with-pack">
+                  <a th:href="@{/stock}" class="back-icon">
+                     <!--<span><img src="/imgs/arrow_back.svg" alt=""></span>-->
+                  </a>
+               </div>
+               <h2>Listes des médicaments</h2>
+               <table>
+                  <thead>
+                     <tr>
+                        <th>ID</th>
+                        <th>Médicament</th>
+                        <th>Quantité</th>
+                        <th>Date Expiration</th>
+                        <th>Statut</th>
+                        <th>Temps Restant</th>
+                        <th>Jours Restants</th>
+                     </tr>
+                  </thead>
+                  <tbody id="stockTableBody">
+                     <tr th:each="med : ${listExpiry}">
+                        <td th:text="${med.id}"></td>
+                        <td th:text="${med.drugName}"></td>
+                        <td th:text="${med.quantity}"></td>
+                        <td th:text="${med.expirationDate != null} ? ${#temporals.format(med.expirationDate, 'dd/MM/yyyy')} : 'N/A'">
+                        </td>
+                        <td>
+                           <span class="status-icon"
+                              th:classappend="${med.status == 'URGENT' ? 'status-urgent' : (med.status == 'ATTENTION' ? 'status-warning' : 'status-normal')}">
+                              &nbsp;
+                           </span>
+                           <span th:text="${med.status}"></span>
+                           <!--<span th:if="${#strings.startsWith(med.status, '🔴')}" class="status-icon">🔴</span>
+                                                                        <span th:if="${#strings.startsWith(med.status, '🟠')}" class="status-icon">🟠</span>
+                                                                        <span th:if="${#strings.startsWith(med.status, '🟢')}" class="status-icon">🟢</span>
+                                                                        <span th:text="${med.status.substring(med.status.indexOf(' ') + 1)}"></span>-->
+                        </td>
+                        <td th:text="${med.remainingTime}"></td>
+                        <td th:text="${med.daysRemaining}"></td>
+                     </tr>
+                  </tbody>
+               </table>
+               <div class="item add-product" id="add-product-btn">
+                 <!-- <div>
+                     <a th:href="@{/addPurchase}">
+                              <span class="material-icons-sharp">add</span>
+                              <h3>Ajouter</h3>
+                           </a>
+                  </div>-->
+               </div>
+            </div>
+         </main>
+         <!---------------------- END OF MAIN -------------------------->
+         <div class="rigth">
+            <div class="top">
+               <button id="menu-btn">
+                  <span class="material-icons-sharp">menu</span>
+               </button>
+               <div class="theme-toggler">
+                  <span class="active"><img src="/imgs/light_mode.svg"></span>
+                  <span><img src="/imgs/dark_mode.svg"></span>
+               </div>
+               <div class="profile">
+                  <div class="info">
+                     <p><b th:text="${loggedUser.nomUtilisateur}">Nom</b></p>
+                     <small class="text-muted" th:text="${loggedUser.type}">Role</small>
+                  </div>
+                  <div class="profile-photo">
+                     <img src="/imgs/profile-1.jpg" alt="">
+                  </div>
+               </div>
+            </div>
+       </div>
+      </div>
+      <script src="/js/main.js" defer></script>
+   </body>
+   </html>

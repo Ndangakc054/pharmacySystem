@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+ <meta charset="UTF-8">
+ <meta http-equiv="X-UA-Compatible" content="IE=edge">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+ <meta http-equiv="Pragma" content="no-cache">
+ <meta http-equiv="Expires" content="0">
+
+ <title>Pharmacie WUTANG</title>
+ <!-- ====MATERIAL ICON=== -->
+ <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
+ rel="stylesheet">
+  <!-- ==== STYLESHEET === -->
+ <link rel="stylesheet" th:href="@{/css/style.css}">
+ <link href="htp" rel="stylesheet">
+</head>
+
+<body>
+    <div class="center-container">
+        <div class="login-container">
+             <h2>Connexion</h2>
+             <form action="/login" method="post">
+                <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+                <div class="password-container">
+                    <input type="password"  id="password" name="password" placeholder="Mot de passe" required>
+                    <img src="/imgs/visibility_off.svg" class="toggle-password" id="eyeicon">
+                    <!--<span class="toggle-password material-icons-sharp" id="eyeicon">visibility</span>-->
+                </div>
+                <button type="submit">Se connecter</button>
+             </form>
+        </div>
+    </div>
+    <!--<script th:src="@{/js/main.js}" defer></script>-->
+    <script>
+        let eyeicon = document.getElementById("eyeicon");
+        let password = document.getElementById("password");
+
+        eyeicon.onclick = function () {
+            if (password.type == "password") {
+                password.type = "text";
+                eyeicon.src = "imgs/visibility.svg";
+            } else {
+                password.type = "password";
+                eyeicon.src = "imgs/visibility_off.svg";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Pharmacie WUTANG</title>
+   <!-- ====MATERIAL ICON=== -->
+   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+   <!-- ==== STYLESHEET === -->
+   <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+   <div class="container">
+      <aside>
+         <div class="top">
+            <div class="logo">
+               <img src="/imgs/pharmacy.png">
+               <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
+            </div>
+         </div>
+         <div class="close" id="close-btn">
+            <span class="material-icons-sharp">close</span>
+         </div>
+         <div class="sidebar">
+            <a th:href="@{/home}">
+               <span><img src="/imgs/grid_view.svg"></span>
+               <h3>Accueil</h3>
+            </a>
+            
+            <a th:href="@{/drugs}">
+               <span><img src="/imgs/medication_liquid.svg"></span>
+               <h3>Médicaments</h3>
+            </a>
+
+            <a th:href="@{/stock}">
+               <span><img src="/imgs/inventory_2.svg"></span>
+               <h3>Inventaire</h3>
+            </a>
+
+            <a th:href="@{/sales}">
+               <span><img src="/imgs/paid.svg"></span>
+               <h3>Ventes</h3>
+            </a>
+
+            <a th:href="@{/purchases}">
+               <span><img src="/imgs/inventory.svg"></span>
+               <h3>Ravitaillement</h3>
+            </a>
+
+            <a th:href="@{/orders}">
+               <span><img src="/imgs/fact_check.svg"></span>
+               <h3>commandes</h3>
+            </a>
+
+            <a th:href="@{/suppliers}">
+               <span><img src="/imgs/person_outline.svg"></span>
+               <h3>Fournisseurs</h3>
+            </a>
+
+            <a th:href="@{/settings}" class="active">
+               <span><img src="/imgs/settings.svg"></span>
+               <h3>Paramètres</h3>
+            </a>
+
+            <form th:action="@{/logout}" method="post">
+               <button type="submit">
+                  <span><img src="/imgs/logout.svg"></span>
+                  <h3>Logout</h3>
+               </button>
+            </form>
+         </div>
+      </aside>
+      <!---------------------- END OF ASIDE -------------------------->
+      <main>
+         <h1>Paramètres</h1>
+         <div class="insigths">
+         </div>
+         <!-----------SETTINGS CONTAINER ---------->
+         <div class="settings-container">
+            <div>
+               <a th:href="@{/settings/users}">
+                  <span><img src="/imgs/people_alt.svg" alt=""></span>
+                  <h2>Gestions des utilisateurs</h2>
+               </a>
+               
+            </div>
+            <div>
+               <a th:href="@{/invoicesPage}">
+                  <span><img src="/imgs/request_quote.svg" alt=""></span>
+                  <h2>Gestions des factures</h2>
+               </a>
+            </div>
+            <div>
+               <a th:href="@{/history}">
+                  <span><img src="/imgs/manage_history.svg" alt=""></span>
+                  <h2>Historique des actions</h2>
+               </a>
+            </div>
+            <div>
+               <a th:href="@{/loginHistory}">
+                  <span><img src="/imgs/history.svg" alt=""></span>
+                  <h2>Historique des connexions</h2>
+               </a>
+            </div>
+         </div>
+            <!----->
+         <div class="recent-orders">
+         </div>
+      </main>
+      <!---------------------- END OF MAIN -------------------------->
+      <div class="rigth">
+         <div class="top">
+            <button id="menu-btn">
+               <span class="material-icons-sharp">menu</span>
+            </button>
+            <div class="theme-toggler">
+               <span class="active"><img src="/imgs/light_mode.svg"></span>
+               <span><img src="/imgs/dark_mode.svg"></span>
+            </div>
+            <div class="profile">
+               <div class="info">
+                  <p><b th:text="${loggedUser.nomUtilisateur}">Nom</b></p>
+                  <small class="text-muted" th:text="${loggedUser.type}">Role</small>
+               </div>
+               <div class="profile-photo">
+                  <img src="/imgs/profile-1.jpg" alt="">
+               </div>
+            </div>
+         </div>
+
+      </div>
+   </div>
+   <!--<script src="./assets/js/orders.js"></script>-->
+   <script th:src="@{/js/main.js}"></script>
+</body>
+
+</html>
