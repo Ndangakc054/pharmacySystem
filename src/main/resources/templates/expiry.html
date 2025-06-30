@@ -21,7 +21,7 @@
             <div class="top">
                <div class="logo">
                   <img src="/imgs/pharmacy.png">
-                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
+                  <h2>PHARMACIE<span class="danger">HUMANOPHAR</span></h2>
                </div>
             </div>
             <div class="close" id="close-btn">
@@ -71,7 +71,7 @@
                <form th:action="@{/logout}" method="post">
                   <button type="submit">
                      <span><img src="/imgs/logout.svg"></span>
-                     <h3>Logout</h3>
+                     <h3>Se déconnecter</h3>
                   </button>
                </form>
             </div>
@@ -82,7 +82,19 @@
             <div class="date">
                <input type="date">
             </div>
-            <div class="insigths">    
+            <div class="insigths"></div>
+            <div class="recent-orders">
+               <div class="title-with-pack">
+                  <a th:href="@{/stock}" class="back-icon">
+                     <span><img src="/imgs/arrow_back.svg" alt=""></span>
+                  </a>
+               </div>
+            </div>
+            <div class="stock-container">
+               <div class="search-container">
+                  <span class="search-icon" onclick="toggleSearch()"><img src="/imgs/search.svg"></span>
+                     <input type="search" id="searchInput" class="search-input" placeholder="Recherchez ici..." onkeyup="filterTable()">
+               </div>
             </div>
             <div th:if="${message}" th:classappend="${status == 'success'} ? 'alert alert-success text-center' : 'alert alert-danger text-center'">
                [[${message}]]
@@ -107,10 +119,10 @@
                         <th>Jours Restants</th>
                      </tr>
                   </thead>
-                  <tbody id="stockTableBody">
+                  <tbody id="tableBody">
                      <tr th:each="med : ${listExpiry}">
                         <td th:text="${med.id}"></td>
-                        <td th:text="${med.drugName}"></td>
+                        <td class="name" th:text="${med.drugName}"></td>
                         <td th:text="${med.quantity}"></td>
                         <td th:text="${med.expirationDate != null} ? ${#temporals.format(med.expirationDate, 'dd/MM/yyyy')} : 'N/A'">
                         </td>

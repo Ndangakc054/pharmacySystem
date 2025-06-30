@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +98,7 @@ public class SalesService {
         invoice.setUser(user);
         invoice.setDateVente(LocalDateTime.now());
         invoice.setPdfInvoice(pdfBytes);
+        invoice.setInvoiceName("facture_" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + ".pdf");
 
         // Sauvegarder la facture pour obtenir son ID
         invoice = invoicesRepository.save(invoice);
@@ -125,6 +127,16 @@ public class SalesService {
            PdfDocument pdfDoc = new PdfDocument(writer);
            Document document = new Document(pdfDoc);
 
+           // Récupération de la dernière facture
+           Invoices invoice = invoicesRepository.findTopByOrderByIdInvoiceDesc();
+           if (invoice == null) {
+               throw new RuntimeException("Aucune facture trouvée");
+           }
+
+           // Récupérer l'année et le mois actuels
+           YearMonth current = YearMonth.now();
+           String formattedCurrent = current.format(DateTimeFormatter.ofPattern("yyyyMM"));
+
            // Débogage : Afficher les médicaments dans la console
            System.out.println("Nombre de médicaments dans la facture : " + salesForm.getItems().size());
            for (SalesItem item : salesForm.getItems()) {
@@ -133,18 +145,28 @@ public class SalesService {
                        .orElseThrow(()-> new RuntimeException("Médicaments non trouvé"));**/
            }
 
+
+
            // Titre
-           document.add(new Paragraph("PHARAMACIE WHU-TANG")
+           document.add(new Paragraph("PHARAMACIE HUMANOPHAR")
                    .setTextAlignment(TextAlignment.CENTER)
                    .setFontSize(18)
                    .setBold());
            //INFORMATION SUR LA FACTURE
-           document.add(new Paragraph("Facture N° : ")
-                   .setTextAlignment(TextAlignment.LEFT));
+           document.add(new Paragraph("NIF : 4000020661"))
+                           .setTextAlignment(TextAlignment.LEFT);
+           document.add(new Paragraph("Téléphone : 79970620"))
+                   .setTextAlignment(TextAlignment.LEFT);
+           document.add(new Paragraph("Commune Mukaza"))
+                   .setTextAlignment(TextAlignment.LEFT);
+           document.add(new Paragraph("Adresse : Peuple Murundi"))
+                   .setTextAlignment(TextAlignment.LEFT);
            document.add(new Paragraph("Date : " +LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
                    .setTextAlignment(TextAlignment.LEFT));
            document.add(new Paragraph("Servi par : " + user.getNomUtilisateur()))
                    .setTextAlignment(TextAlignment.LEFT);
+           document.add(new Paragraph("Facture N° : " + invoice.getIdInvoice() + "/" + formattedCurrent)
+                   .setTextAlignment(TextAlignment.LEFT));
            document.add(new Paragraph(" "));// Espacement
 
            // En-tête des articles
@@ -163,8 +185,8 @@ public class SalesService {
            for (SalesItem item : salesForm.getItems()) {
                table.addCell(item.getDrugName());
                table.addCell(String.valueOf(item.getQuantity()));
-               table.addCell(String.format("%.2f €", item.getUnitPrice()));
-               table.addCell(String.format("%.2f €", item.getTotalAmount()));
+               table.addCell(String.format("%.2f Fbu", item.getUnitPrice()));
+               table.addCell(String.format("%.2f Fbu", item.getTotalAmount()));
            }
 
            //Ajout di total général
@@ -178,7 +200,7 @@ public class SalesService {
 
            document.add(table);
 
-           document.add(new Paragraph("MONTANT À PAYER: " + totalAmount + " €")
+           document.add(new Paragraph("MONTANT À PAYER: " + totalAmount + " Fbu")
                    .setTextAlignment(TextAlignment.RIGHT)
                    .setBold());
            // Informations supplémentaires
