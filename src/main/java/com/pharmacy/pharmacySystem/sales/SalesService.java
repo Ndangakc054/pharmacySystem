@@ -196,7 +196,7 @@ public class SalesService {
            table.addCell("Total :");
            table.addCell("");
            table.addCell("");
-           table.addCell(String.format("%.2f €", totalAmount));
+           table.addCell(String.format("%.2f Fbu", totalAmount));
 
            document.add(table);
 
