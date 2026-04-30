@@ -36,7 +36,7 @@ public class DrugsService {
         try {
             auditService.logAction(
                     "Médicaments",
-                    isCreation ? "INSERT" : "UPDATE",
+                    isCreation ? "AJOUT" : "MIS À JOUR",
                     saveDrug.getIdDrug(),
                     isCreation ? null : repo.findById(drug.getIdDrug()).orElse(null),
                     saveDrug

@@ -60,6 +60,43 @@ if ( !window.location.href.includes("loginPage")){
     }   
 }
 
+//Code Js pour le modal du message après un ajout, une modification ou une suppression
+document.addEventListener("DOMContentLoaded", function() {
+
+    // Vérifie si la modal existe
+    const modal = document.getElementById('notification-modal');
+
+    if (modal) {
+        // --- 1. Définition de la fonction de fermeture ---
+        const closeModal = () => {
+            // Ajoute l'animation de sortie définie dans votre CSS
+            modal.style.animation = 'slideOut 0.5s forwards';
+
+            // Attend la fin de l'animation (500ms) avant de supprimer l'élément
+            setTimeout(() => {
+                modal.remove();
+            }, 500);
+        };
+
+        // --- 2. Gérer le bouton "Fermer" (le X) ---
+        // On cherche le bouton à l'intérieur du modal
+        const closeBtn = modal.querySelector('.close-btn');
+        if (closeBtn) {
+            // On attache l'événement click ici au lieu du HTML
+            closeBtn.addEventListener('click', closeModal);
+        }
+
+        // --- 3. Gérer la fermeture automatique (Timer) ---
+        const displayTime = 10000; // 10 secondes
+        setTimeout(() => {
+            // Vérifie si le modal existe encore avant d'essayer de le fermer
+            if (document.body.contains(modal)) {
+                closeModal();
+            }
+        }, displayTime);
+    }
+});
+
 //SCRIPT FOR SEARCH-ICON 
 function toggleSearch() {
     const searchInput = document.querySelector(".search-input");
@@ -74,6 +111,26 @@ function toggleSearch() {
 }
 
 //SCRIPT TO FILTER TABLE ROWS BASED ON INPUT IN SEARCH INPUT
+/**function filterTable() {
+    let input = document.getElementById("searchInput");
+    let filter = input.value.toLowerCase();
+    let table = document.getElementById("tableBody");
+    let rows = table.getElementsByTagName("tr");
+
+    for(let i = 0; i < rows.length; i++ ){
+        let td = rows[i].querySelector(".name"); // Take the “Name” column
+        if(td) {
+            let txValue = td.textContent || td.innerText;
+            if(txValue.toLowerCase().startsWith(filter)) { //filter by starting letter
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+}**/
+
+//SCRIPT TO FILTER TABLE ROWS BASED ON INPUT IN SEARCH INPUT IN ORDERS PAGE
 function filterTable() {
     let input = document.getElementById("searchInput");
     let filter = input.value.toLowerCase();
@@ -93,109 +150,52 @@ function filterTable() {
     }
 }
 
-//FONCTION POUR AJOUTER UN MEDICAMENT DANS LA FACTURE
-/**function addToInvoice(button) {
-    //Recuperer la ligne parente
-    const row = button.closest("tr");
-    //Récupérer l'ID
-    const drugId = row.dataset.drugId;
+//SCRIPT POUR LE  FILTRE DE LA PAGE D'EXPIRATION
+function filterByStatus() {
+    // 1. Récupérer la valeur sélectionnée (URGENT, ATTENTION, NORMAL ou all)
+    var select = document.getElementById("statusSelect");
+    var filter = select.value.toUpperCase();
 
-    //Recuperer les informations du m"dicament
-    const name = row.querySelector(".stock-name").textContent;
-    const unitPrice = row.children[1].textContent.trim();
+    // 2. Récupérer toutes les lignes du tableau
+    var tableBody = document.getElementById("tableBody");
+    var rows = tableBody.getElementsByTagName("tr");
 
-    //Vérifier si l'article est déja dans la facture
-    const invoiceBody = document.getElementById("invoice-body");
-    const existingRow = Array.from(invoiceBody.children).find(
-        (r) => r.querySelector(".invoice-name")?.textContent === name
-    );
-    if (existingRow) {
-        //Augmenter la quantité si déja present
-        const quantityCell = existingRow.querySelector(".invoice-quantity");
-        const quantity = parseInt(quantityCell.textContent) +1;
-        quantityCell.textContent = quantity;
+    // 3. Parcourir les lignes pour filtrer
+    for (var i = 0; i < rows.length; i++) {
+        // Le statut se trouve dans la 5ème colonne (index 4)
+        var statusCell = rows[i].getElementsByTagName("td")[4];
 
-        //Mettre à jour le total
-        const totalCell = existingRow.querySelector(".invoice-total");
-        totalCell.textContent = (quantity * parseFloat(unitPrice)).toFixed(2);
-    } else {
-        //Ajouter une nouvelle ligne si non présent 
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
-            <td class="invoice-name">${name}</td>
-            <td class="invoice-quantity">1</td>
-            <td class="invoice-unit-price">${unitPrice}</td>
-            <td class="invoice-total">${parseFloat(unitPrice).toFixed(2)}</td>
-            <input type="hidden" name="drugId" value="${drugId}">
-            <td>
-                <span class="material-icons-sharp cancel-icon" onclick="removeFromInvoiceTable(this)">highlight_off</span>
-            </td>
-        `;
-        invoiceBody.appendChild(newRow);
-    }
-}
+        if (statusCell) {
+            var statusText = (statusCell.textContent || statusCell.innerText).toUpperCase();
 
-//Décrémenter quand on clique dans la FACTURE elle-même
-function removeFromInvoiceTable(button) {
-    // Ici, le "button" est dans la facture (tableau de droite)
-    const row = button.closest("tr");
-  
-    const quantityCell = row.querySelector(".invoice-quantity");
-    if (!quantityCell) {
-      alert("Aucune colonne de quantité détectée dans la facture");
-      return;
-    }
-  
-    let quantity = parseInt(quantityCell.textContent);
-    if (quantity > 0) {
-      quantity--;
-      quantityCell.textContent = quantity;
-      
-      // Supprime la ligne si quantité = 0
-      if (quantity === 0) {
-        row.remove();
-      } else {
-        // Mettre à jour le total
-        const unitPrice = parseFloat(row.querySelector(".invoice-unit-price").textContent);
-        row.querySelector(".invoice-total").textContent = (quantity * unitPrice).toFixed(2);
-      }
-    }
-  }
-  //FONCTION POUR DECREMENTER LA QUANTITÉ OU SUPPRESSION DE LA LIGNE DANS LA FACTURE
-  
-  function removeFromInvoiceByLeft(button) {
-    const row = button.closest("tr");
-    //Get the drug name
-    const name = row.querySelector(".stock-name").textContent;
-
-    //cherchez la ligne correspondante dans la facture
-    const invoiceBody = document.getElementById("invoice-body");
-    const existingRow = Array.from(invoiceBody.children).find(
-        (r) => r.querySelector(".invoice-name")?.textContent === name
-    );
-
-    if (!existingRow) {
-        alert("Ce medicament n'est pas encore dans la facture");
-        return;
-    }
-
-    //DECREMENTER LA QUANTITÉ DANS LA FACTURE
-    const quantityCell = existingRow.querySelector(".invoice-quantity");
-    let quantity = parseInt(quantityCell.textContent);
-    if (quantity > 0) {
-        quantity--;
-        quantityCell.textContent = quantity;
-
-        //si la quantité tombe à 0, on enlève la ligne
-        if(quantity === 0) {
-            existingRow.remove();
-        } else {
-            //Mettre à jour le total 
-            const unitPrice = parseFloat(existingRow.querySelector(".invoice-unit-price").textContent);
-            existingRow.querySelector(".invoice-total").textContent = (quantity * unitPrice).toFixed(2); 
+            // LOGIQUE :
+            // Si on choisit "all", on affiche tout.
+            // Sinon, on affiche seulement si le texte de la cellule contient le filtre.
+            if (filter === "ALL" || statusText.includes(filter)) {
+                rows[i].style.display = ""; // Affiche la ligne
+            } else {
+                rows[i].style.display = "none"; // Cache la ligne
+            }
         }
     }
-}**/
+}
+//SCRIPT POUR CALCULER LE MONTANT TOTAL À PAYER DANS LA FACTURE
+
+function updateGrandTotal() {
+    const invoiceBody = document.getElementById("invoice-body");
+    const rows = invoiceBody.querySelectorAll("tr");
+    let totalGeneral = 0;
+
+    rows.forEach(row => {
+        const totalCell = row.querySelector(".invoice-total");
+        if (totalCell) {
+            totalGeneral += parseFloat(totalCell.textContent);
+        }
+    });
+
+    // Mettre à jour l'affichage dans le tfoot
+    document.getElementById("grand-total").textContent = totalGeneral.toFixed(2);
+}
 //FONCTION POUR AJOUTER UN MEDICAMENT DANS LA FACTURE
 function addToInvoice(button) {
     // Récupérer la ligne parente
@@ -239,6 +239,7 @@ function addToInvoice(button) {
         `;
         invoiceBody.appendChild(invoiceRow);
     }
+    updateGrandTotal();
 }
 
 // FONCTION POUR DÉCRÉMENTER OU SUPPRIMER DANS LA FACTURE
@@ -265,6 +266,7 @@ function removeFromInvoiceTable(button) {
             row.querySelector(".invoice-total").textContent = (quantity * unitPrice).toFixed(2);
         }
     }
+    updateGrandTotal();
 }
 
 // FONCTION POUR DÉCRÉMENTER DEPUIS LE STOCK
@@ -301,174 +303,92 @@ function removeFromInvoiceByLeft(button) {
             existingRow.querySelector(".invoice-total").textContent = (quantity * unitPrice).toFixed(2); 
         }
     }
+    updateGrandTotal();
 }
-/*********************************************/
-
-//FONCTION POUR AJOUTER UN MEDICAMENT DANS LE LISTE D'ACHAT
-function addToPurchaseList(button) {
-    //Recuperer la ligne parente
-    const row = button.closest("tr");
-
-    //Recuperer les informations du m"dicament
-    const name = row.querySelector(".name").textContent;
-    const unitPrice = row.children[1].textContent.trim();
-
-    //Vérifier si l'article est déja dans la facture
-    const ordersBody = document.getElementById("orders-body");
-    const existingRow = Array.from(ordersBody.children).find(
-        (r) => r.querySelector(".orders-name")?.textContent === name
-    );
-    if (existingRow) {
-        //Augmenter la quantité si déja present
-        const quantityCell = existingRow.querySelector(".orders-quantity");
-        const quantity = parseInt(quantityCell.textContent) +1;
-        quantityCell.textContent = quantity;
-    } else {
-        //Ajouter une nouvelle ligne si non présent 
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
-            <td class="orders-name">${name}</td>
-            <td class="orders-quantity">1</td>
-            <td>
-                <span class="cancel-icon" onclick="removeFromPurchaseListTable(this)">highlight_off</span>
-            </td>
-        `;
-        ordersBody.appendChild(newRow);
-    }
-}
-
-//Décrémenter quand on clique dans la liste des médicaments à acheter
-function removeFromPurchaseListTable(button) {
-    // Ici, le "button" est dans la facture (tableau de droite)
-    const row = button.closest("tr");
-  
-    const quantityCell = row.querySelector(".orders-quantity");
-    if (!quantityCell) {
-      alert("Aucune colonne de quantité détectée");
-      return;
-    }
-  
-    let quantity = parseInt(quantityCell.textContent);
-    if (quantity > 0) {
-      quantity--;
-      quantityCell.textContent = quantity;
-      
-      // Supprime la ligne si quantité = 0
-      if (quantity === 0) {
-        row.remove();
-      } 
-    }
-  }
-  //FONCTION POUR DECREMENTER LA QUANTITÉ OU SUPPRESSION DE LA LIGNE DANS LA LISTE DES MEDICAMENTS À ACHETER
-  
-  function removeFromPurchaseListByLeft(button) {
-    const row = button.closest("tr");
-    //Get the drug name
-    const name = row.querySelector(".stock-name").textContent;
-
-    //cherchez la ligne correspondante dans la facture
-    const invoiceBody = document.getElementById("orders-body");
-    const existingRow = Array.from(invoiceBody.children).find(
-        (r) => r.querySelector(".orders-name")?.textContent === name
-    );
-    if (!existingRow) {
-        alert("Ce medicament n'est pas encore dans la liste");
-        return;
-    }
-
-    //DECREMENTER LA QUANTITÉ DANS LA FICHE DE REQUISITION
-    const quantityCell = existingRow.querySelector(".orders-quantity");
-    let quantity = parseInt(quantityCell.textContent);
-    if (quantity > 0) {
-        quantity--;
-        quantityCell.textContent = quantity;
-
-        //si la quantité tombe à 0, on enlève la ligne
-        if(quantity === 0) {
-            existingRow.remove();
-        }
-    }
-}
-/************************************************************************ */
-
 
 //VALIDER UNE VENTE
-document.getElementById('validate-invoice').addEventListener('click', function(event) {
-    event.preventDefault();
-    const invoiceBody = document.getElementById('invoice-body');
-    const rows = invoiceBody.getElementsByTagName('tr');
-    //Vérifier qeu la facture est vide
-    if(rows.length === 0) {
-        alert("Impossible de valider : la facture est vide !");
-        return;
-    }
-    const items = [];
 
-    for (let row of rows) {
-        const name = row.querySelector('.invoice-name').textContent;
-        const quantity = parseInt(row.querySelector('.invoice-quantity').textContent);
-        const unitPrice = parseFloat(row.querySelector('.invoice-unit-price').textContent);
-        const totalAmount = quantity * unitPrice;
-        //const totalAmount = parseFloat(row.querySelector('.invoice-total').textContent);
+// VALIDER UNE VENTE
+const validateBtn = document.getElementById('validate-invoice');
+if (validateBtn) { // On vérifie si le bouton existe d'abord
+    validateBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        const invoiceBody = document.getElementById('invoice-body');
+        const rows = invoiceBody.getElementsByTagName('tr');
+            //Vérifier qeu la facture est vide
+            if(rows.length === 0) {
+                alert("Impossible de valider : la facture est vide !");
+                return;
+            }
+            const items = [];
 
-        items.push({
-            idDrug: parseInt(row.querySelector('input[name="drugId"]').value),
-            drugName : name,
-            quantity: quantity,
-            unitPrice: unitPrice,
-            totalAmount: totalAmount
-        });
-    }
-    // Récupération et conversion de userId en nombre entier
-    const userId = parseInt(document.getElementById('user-id').value);
-    const userName = document.getElementById('user-name').textContent;
+            for (let row of rows) {
+                const name = row.querySelector('.invoice-name').textContent;
+                const quantity = parseInt(row.querySelector('.invoice-quantity').textContent);
+                const unitPrice = parseFloat(row.querySelector('.invoice-unit-price').textContent);
+                const totalAmount = quantity * unitPrice;
+                //const totalAmount = parseFloat(row.querySelector('.invoice-total').textContent);
+
+                items.push({
+                    idDrug: parseInt(row.querySelector('input[name="drugId"]').value),
+                    drugName : name,
+                    quantity: quantity,
+                    unitPrice: unitPrice,
+                    totalAmount: totalAmount
+                });
+            }
+            // Récupération et conversion de userId en nombre entier
+            const userId = parseInt(document.getElementById('user-id').value);
+            const userName = document.getElementById('user-name').textContent;
 
 
-    const salesForm = {
-        //userId: document.getElementById('user-id').textContent,
-        userId: userId,
-        userName: userName,
-        dateVente: new Date().toISOString(),
-        items: items
-    };
+            const salesForm = {
+                //userId: document.getElementById('user-id').textContent,
+                userId: userId,
+                userName: userName,
+                dateVente: new Date().toISOString(),
+                items: items
+            };
 
-    fetch('/sales/save', {
-        method: 'POST',
-        headers: {
-            'Content-Type' : 'application/json',
-        },
-        body: JSON.stringify(salesForm),
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text) });
-            //throw new Error("Erreur HTTP : " + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Success:', data);
-        alert(data.message || "Facture validée avec succès !");
+            fetch('/sales/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type' : 'application/json',
+                },
+                body: JSON.stringify(salesForm),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                    //throw new Error("Erreur HTTP : " + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                alert(data.message || "Facture validée avec succès !");
 
-        // Vider le tableau après la validation
-        invoiceBody.innerHTML = '';
-        
-        // Ouvrir le PDF dans un nouvel onglet
+                // Vider le tableau après la validation
+                invoiceBody.innerHTML = '';
 
-        if (data.pdfUrl) {
-            const link = document.createElement('a');
-            link.href = data.pdfUrl;
-            link.target = '_blank';
-            link.click(); // Déclenche un clic sur le lien
-        }
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-        alert('Erreur: ' + error.message);
-        //''alert('Erreur lors de le validation de la  putain de facture.');
-    }) ;
-});
-//calculer PrixTotal automatiquement lors de la soumission du formulaire de modification de la facture 
+                // Ouvrir le PDF dans un nouvel onglet
+
+                if (data.pdfUrl) {
+                    const link = document.createElement('a');
+                    link.href = data.pdfUrl;
+                    link.target = '_blank';
+                    link.click(); // Déclenche un clic sur le lien
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Erreur: ' + error.message);
+                //''alert('Erreur lors de le validation de la  putain de facture.');
+            }) ;
+    });
+}
+
+//calculer PrixTotal automatiquement lors de la soumission du formulaire de modification de la facture
 document.addEventListener("input", function (event) {
     if(event.target.name.includes("quantity") || event.target.name.includes("unitPrice")) {
         const row = event.target.closest("tr");
@@ -479,334 +399,219 @@ document.addEventListener("input", function (event) {
     }
 });
 
-/**function refreshOrders() {
-    fetch('/refreshOrders', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        const tableBody = document.getElementById('stockTableBody');
-        tableBody.innerHTML = ''; // Vider le tableau
+document.addEventListener("DOMContentLoaded", function() {
+    const profileTrigger = document.getElementById('profileTrigger');
+    const userPopup = document.getElementById('user-popup');
 
-        data.forEach(stock => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="stock-name">${stock.drug.nameDrug}</td>
-                <td>${stock.quantity}</td> <!-- Assurez-vous que le nom correspond à la propriété Java -->
-                <td>
-                    <span class="material-icons-sharp add-icon" onclick="addToInvoice(this)">add_circle_outline</span>
-                </td>
-                <td>
-                    <span class="material-icons-sharp cancel-icon" onclick="removeFromInvoiceByLeft(this)">highlight_off</span>
-                </td>
-            `;
-            tableBody.appendChild(row);
+    if (profileTrigger && userPopup) {
+        // Toggle (ouvrir/fermer) au clic sur le profil
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation(); // Empêche la fermeture immédiate
+            const isVisible = userPopup.style.display === 'block';
+            userPopup.style.display = isVisible ? 'none' : 'block';
         });
-    })
-    .catch(error => {
-        console.error('Erreur', error);
-    });
-}**/
-//VALIDER UNE FICHE DE COMMANDE
 
-
-document.getElementById('validate-file').addEventListener('click', function() {
-    const items = [];
-    const rows = document.querySelectorAll('#orders-body tr');
-    
-    rows.forEach(row => {
-        const name = row.querySelector('.orders-name').textContent;
-        const quantity = parseInt(row.querySelector('.orders-quantity').textContent);
-        
-        items.push({
-            drugName: name,
-            quantity: quantity
+        // Fermer si on clique n'importe où ailleurs sur la page
+        document.addEventListener('click', (e) => {
+            if (!profileTrigger.contains(e.target)) {
+                userPopup.style.display = 'none';
+            }
         });
-    });
-
-    const formData = {
-        dateOrders: new Date().toISOString().split('T')[0], // Date du jour au format YYYY-MM-DD
-        items: items
-    };
-
-    // Envoyer les données au backend
-    fetch('/orders/save', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.pdfUrl) {
-            // Ouvrir le PDF dans un nouvel onglet
-            window.open(data.pdfUrl, '_blank');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-});
-
-/**document.getElementById('validate-file').addEventListener('click', async () => {
-    const ordersForm = {
-        userId: document.getElementById('userId').textContent,
-        dateOrders: new Date().toISOString().split('T')[0],
-        items: []
-    };
-    // Récupérer les médicaments du tableau
-    document.querySelectorAll('#orders-body tr').forEach(row => {
-        const drugName = row.querySelector('.orders-name').textContent;
-        const quantity = parseInt(row.querySelector('.orders-quantity').textContent);
-
-        ordersForm.items.push({
-            drugName: drugName,
-            minThreshold: quantity
-        });
-    });
-    try {
-        const validateBtn = document.getElementById('validate-file');
-        validateBtn.disabled = true; // Désactiver le bouton pendant l'envoi
-
-        const response = await fetch('/orders/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(ordersForm)
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erreur HTTP: ${response.status} - ${errorText}`);
-        }
-
-        const result = await response.json();
-
-        //Ouvrir le PDF dans un nouvel onglet
-        window.open('/orders/pdf/${result.pdfUrl.split('/').pop()}', '_blank');
-    } catch (error) {
-        console.error('Erreur:',error);
-        alert('Echec de la validation : ' + error.message);
-    } finally {
-        validateBtn.disabled = false;
     }
-});***/
+});
 
-/**document.getElementById('validate-file').addEventListener('click', async () => {
-    // Récupérer les données du formulaire
-    const orders = [];
-    const rows = document.querySelectorAll('#orders-body tr');
-    
-    rows.forEach(row => {
-        const drugName = row.querySelector('.orders-name').textContent;
-        const quantity = parseInt(row.querySelector('.orders-quantity').textContent);
-        orders.push({ drugName, quantity });
-    });
+// 1. AJOUTER OU INCRÉMENTER DANS LA FICHE DE REQUISITION
+function addToPurchaseList(button) {
+    const row = button.closest("tr");
+    const nameCell = row.querySelector(".name") || row.querySelector(".order-name");
+    const name = nameCell.textContent.trim();
 
-    const formData = {
-        //userId: parseInt(document.getElementById('userId').textContent),
-        dateOrders: new Date().toISOString().split('T')[0], // Date du jour
-        items: orders
-    };
+    const ordersBody = document.getElementById("orders-body");
 
-    try {
-        const response = await fetch('/orders/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        });
+    const existingRow = Array.from(ordersBody.children).find(
+        (r) => r.querySelector(".order-name")?.textContent === name
+    );
 
-        const result = await response.json();
-        if (response.ok) {
-            // Ouvrir le PDF dans un nouvel onglet
-            window.open(result.pdfUrl, '_blank');
-        } else {
-            alert('Erreur: ' + result.message);
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        alert('Une erreur est survenue');
+    if (existingRow) {
+        const qtySpan = existingRow.querySelector(".order-quantity");
+        qtySpan.textContent = parseInt(qtySpan.textContent) + 1;
+    } else {
+        const newRow = document.createElement("tr");
+        newRow.innerHTML = `
+            <td class="order-name">${name}</td>
+            <td class="order-quantity">1</td>
+            <td>
+               <span class="add-icon" onclick="addToPurchaseList(this)"><img src="/imgs/add_circle.svg"></span>
+            </td>
+            <td>
+               <span class="cancel-icon" onclick="removeFromPurchaseListByLeft(this)"><img src="/imgs/remove_circle.svg"></span>
+            </td>
+        `;
+        ordersBody.appendChild(newRow);
     }
-});**/
- 
-
-
-/***function submitOrdersForm() {
-    const orders = [];
-    const rows = document.querySelectorAll("#orders-body tr");
-    
-    rows.forEach(row => {
-        const name = row.querySelector(".orders-name").textContent;
-        const quantity = parseInt(row.querySelector(".orders-quantity").textContent);
-        orders.push({ drugName: name, quantity: quantity });
-    });
-
-    const formData = {
-        dateOrders: new Date().toISOString().split('T')[0],
-        items: orders,
-        userId: document.getElementById("userId").textContent
-    };
-
-    fetch('/orders/save', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.pdfUrl) {
-            window.open(data.pdfUrl, '_blank');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}***/
-
-//FORMATAGE JSON POUR LES HISTORIQUES
-/**document.querySelectorAll('pre').forEach(e1 => {
-    try {
-        const json = JSON.parse(e1.textContent);
-        e1.textContent = JSON.stringify(json, null, 2);
-    } catch(e) {}
-});
-
-// Formattage du JSON dans la page
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('pre.json').forEach(el => {
-        try {
-            const json = JSON.parse(el.textContent);
-            el.textContent = JSON.stringify(json, null, 2);
-        } catch(e) {
-            console.error('Erreur de parsing JSON', e);
-        }
-    });
-});**/
-
-// Formattage du JSON dans la page
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('pre.json').forEach(el => {
-        try {
-            // Remplace d'abord les &quot; par des guillemets normaux
-            let rawContent = el.innerHTML.replace(/&quot;/g, '"');
-            
-            // Essaye de parser le JSON
-            const json = JSON.parse(rawContent);
-            
-            // Formate avec indentation
-            el.innerHTML = JSON.stringify(json, null, 2)
-                .replace(/</g, '&lt;')  // Échappe les < pour la sécurité
-                .replace(/>/g, '&gt;'); // Échappe les > pour la sécurité
-        } catch(e) {
-            console.error('Erreur de parsing JSON', e);
-            // Affiche le contenu brut si le parsing échoue
-            el.innerHTML = el.innerHTML.replace(/&quot;/g, '"');
-        }
-    });
-});
-
-//MODEL POUR HISTORY PAGE
-
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
-    const beforeValues = document.getElementById('beforeValues');
-    const afterValues = document.getElementById('afterValues');
-    
-    document.querySelectorAll('.details-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const before = this.getAttribute('data-before');
-            const after = this.getAttribute('data-after');
-            
-            // Formater le JSON pour un affichage plus lisible
-            beforeValues.textContent = before ? JSON.stringify(JSON.parse(before), null, 2) : "Aucune donnée";
-            afterValues.textContent = after ? JSON.stringify(JSON.parse(after), null, 2) : "Aucune donnée";
-            
-            modal.show();
-        });
-    });
-});
-/**** SALE PDF JS ****/
-//Mettre et retirer du div pour les ventes effectuées
-
-function addToSaleDiv(clickedElement) {
-    const row = clickedElement.closest('tr');
-    const saleId = row.dataset.saleId;
-    const targetBody = document.getElementById('sale-body');
-
-    // Vérifier si déjà présent
-    if (targetBody.querySelector(`[data-sale-id="${saleId}"]`)) {
-        alert("Ligne déjà ajoutée !");
-        return;
-    }
-
-    // Cloner les données (Nom, Quantité, PU, PT)
-    const newRow = document.createElement('tr');
-    newRow.dataset.saleId = saleId;
-    newRow.innerHTML = `
-        <td>${row.cells[0].textContent}</td>
-        <td>${row.cells[1].textContent}</td>
-        <td>${row.cells[2].textContent}</td>
-        <td>${row.cells[3].textContent}</td>
-        <td><span onclick="this.closest('tr').remove()"><img src="/imgs/remove_circle_outline.svg"></span></td>
-    `;
-
-    targetBody.appendChild(newRow);
 }
 
-function removeFromSaleDiv(clickedElement) {
-    const row = clickedElement.closest('tr');
-    // Si la ligne est dans le div, supprimer directement
-    if (row.closest('#sale-body')) {
-        row.remove();
-        return;
-    }
-    // Si la ligne est dans le tableau principal, chercher dans le div
-    const saleId = row.dataset.saleId;
-    const targetRow = document.querySelector(`#sale-body [data-sale-id="${saleId}"]`);
+// 2. DÉCRÉMENTER OU SUPPRIMER DANS LA FICHE DE RÉQUISITION
+function removeFromPurchaseListByLeft(button) {
+    const row = button.closest("tr");
+    const name = (row.querySelector(".name") || row.querySelector(".order-name")).textContent.trim();
+    const ordersBody = document.getElementById("orders-body");
+
+    // Chercher la ligne dans la fiche de réquisition
+    const targetRow = Array.from(ordersBody.children).find(
+        (r) => r.querySelector(".order-name")?.textContent === name
+    );
 
     if (targetRow) {
-        targetRow.remove();
-    } else {
-        alert("Ligne pas encore ajoutée !");
+        const qtySpan = targetRow.querySelector(".order-quantity");
+        let qty = parseInt(qtySpan.textContent);
+
+        if (qty > 1) {
+            qtySpan.textContent = qty - 1;
+        } else {
+            // Si la quantité arrive à 1 et qu'on clique encore, on supprime la ligne
+            targetRow.remove();
+        }
     }
 }
-/***  POUR AFFICHER LE MOT DE PASSE ******/
-let eyeicon = document.getElementById("eyeicon");
-let password = document.getElementById("password");
+/** == FONCTION POUR GÉNÉRER LE PDF DU FICHE DE REQUISITION == **/
 
-eyeicon.onclick = function(){
-    if(password.type == "password"){
-        password.type = "text";
-    }else{
-        password.type = "password";
+document.getElementById('validate-file').addEventListener('click', function(event) {
+    event.preventDefault();
+
+    const ordersBody = document.getElementById('orders-body');
+    const rows = ordersBody.getElementsByTagName('tr');
+
+    if (rows.length === 0) {
+        alert("La fiche est vide !");
+        return;
+    }
+
+    // 1. On récupère les données du tableau
+    const items = [];
+    for (let row of rows) {
+        items.push({
+            drugName: row.querySelector('.order-name').textContent,
+            quantity: parseInt(row.querySelector('.order-quantity').textContent)
+        });
+    }
+
+    // 2. Envoi au serveur
+    fetch('/requisition/generate-pdf', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(items)
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("Erreur serveur");
+        return response.blob(); // On récupère le fichier PDF
+    })
+    .then(blob => {
+        // 3. Création d'une URL pour le fichier et ouverture dans un nouvel onglet
+        const fileURL = URL.createObjectURL(blob);
+        window.open(fileURL, '_blank');
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert("Impossible de générer le PDF");
+    });
+});
+//SCRIPT POUR LE TABLEAU DES VENTES
+
+function filterByDate() {
+    var dateInput = document.getElementById("datePicker");
+    var date = dateInput.value;
+
+    if (date) {
+        // Cette méthode récupère l'URL actuelle (ex: /purchases ou /recentSales)
+        // et recharge la page avec le nouveau paramètre date
+        var currentPath = window.location.pathname;
+        window.location.href = currentPath + "?date=" + date;
     }
 }
- /****CODE POUR FAIRE DISPARAITRE LE PETIT DIV D'ALERTE***/
- // Exécuter seulement si la div existe
-/**window.addEventListener('DOMContentLoaded', () => {
-    const alertDiv = document.getElementById('autoHideAlert');
+// MODAL POUR LE USER POUR ÉDITER SON PROFIL
+document.addEventListener("DOMContentLoaded", function() {
+    const profileTrigger = document.getElementById('profileTrigger');
+    const userPopup = document.getElementById('user-popup');
 
-    if(alertDiv) {
-        //cacher après 7 sec
-        setTimeout(() => {
-            alertDiv.style.opacity = '0';
-            // Optionnel: Supprimer complètement après la transition
-            setTimeout(()=>{
-                alertDiv.remove();
-            },300);
-        },7000);
+    if (profileTrigger && userPopup) {
+        // Toggle (ouvrir/fermer) au clic sur le profil
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation(); // Empêche la fermeture immédiate
+            const isVisible = userPopup.style.display === 'block';
+            userPopup.style.display = isVisible ? 'none' : 'block';
+        });
+
+        // Fermer si on clique n'importe où ailleurs sur la page
+        document.addEventListener('click', (e) => {
+            if (!profileTrigger.contains(e.target)) {
+                userPopup.style.display = 'none';
+            }
+        });
     }
- });**/
- window.addEventListener('DOMContentLoaded', () => {
-    const alertDiv = document.getElementById('autoHideAlert');
-    alertDiv && setTimeout(() => alertDiv.remove(), 7000);
 });
 
+//SCRIPT POUR LE  FILTRE DE LA PAGE DRUGS
+function filterByCategory() {
+    var select = document.getElementById("categorySelect");
+    var filter = select.value.toUpperCase();
+    var tableBody = document.getElementById("tableBody");
+    var rows = tableBody.getElementsByTagName("tr");
+
+    for (var i = 0; i < rows.length; i++) {
+        // CHANGEMENT ICI : Index 1 pour la colonne Catégorie
+        var categoryCell = rows[i].getElementsByTagName("td")[1];
+
+        if (categoryCell) {
+            var categoryText = (categoryCell.textContent || categoryCell.innerText).toUpperCase();
+
+            if (filter === "ALL" || categoryText.includes(filter)) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+}
+// --- FONCTION DE FERMETURE (Mise en dehors pour être accessible partout) ---
+
+
+/**document.addEventListener("DOMContentLoaded", function() {
+    const modal = document.getElementById('notification-modal');
+
+    if (modal) {
+        const closeModal = () => {
+            // 1. On lance l'animation
+            modal.style.animation = 'slideOut 0.5s forwards';
+
+            // 2. Par sécurité, on réduit l'opacité immédiatement
+            modal.style.opacity = '0';
+            modal.style.transition = 'opacity 0.5s ease';
+
+            // 3. Suppression physique après l'animation
+            setTimeout(() => {
+                if (modal && modal.parentNode) {
+                    modal.style.display = 'none'; // Cache immédiatement
+                    modal.remove(); // Supprime du DOM
+                }
+            }, 500);
+        };
+
+        const closeBtn = modal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.onclick = closeModal; // Utilisation de onclick pour écraser tout conflit
+        }
+
+        // Fermeture automatique après 10s
+        setTimeout(() => {
+            if (document.body.contains(modal)) {
+                closeModal();
+            }
+        }, 10000);
+    }
+});**/
 
 
 

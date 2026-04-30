@@ -17,4 +17,6 @@ public interface DrugsRepository extends CrudRepository<Drugs, Integer> {
      //Tri par nom de médicament ascendant
      @Query("SELECT s FROM Drugs s ORDER BY s.nameDrug ASC")
      List<Drugs> findAllOrderByDrugNameAsc();
+
+     Drugs findFirstByNameDrug(String nameDrug);
 }

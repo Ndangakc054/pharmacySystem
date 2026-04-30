@@ -8,30 +8,206 @@
  <meta http-equiv="Pragma" content="no-cache">
  <meta http-equiv="Expires" content="0">
 
- <title>Pharmacie WUTANG</title>
+ <title>Pharmacie HUMANOPHAR</title>
  <!-- ====MATERIAL ICON=== -->
- <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
- rel="stylesheet">
+ <!--<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
+ rel="stylesheet">-->
   <!-- ==== STYLESHEET === -->
- <link rel="stylesheet" th:href="@{/css/style.css}">
+ <!--<link rel="stylesheet" th:href="@{/css/style.css}">-->
  <link href="htp" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #7380ec;
+            --color-danger: #ff7782;
+            --color-success: #41f1b6;
+            --color-white: #fff;
+            --color-info-dark: #7d8da1;
+            --color-dark: #363949;
+            --box-shadow: 0 2rem 3rem rgba(132, 139, 200, 0.18);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #7380ec 0%, #a18cd1 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .login-container {
+            background: var(--color-white);
+            width: 100%;
+            max-width: 400px;
+            padding: 3rem;
+            border-radius: 2rem;
+            box-shadow: var(--box-shadow);
+            text-align: center;
+        }
+
+        .login-header h2 {
+            color: var(--color-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        .login-header p {
+            color: var(--color-info-dark);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--color-dark);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px; /* Padding ajusté */
+            border: 1px solid #ddd;
+            border-radius: 0.8rem;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box; /* Important pour ne pas dépasser */
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--color-primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(115, 128, 236, 0.2);
+        }
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.password-wrapper img {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+
+.password-wrapper img:hover {
+    opacity: 1;
+}
+
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 0.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-login:hover {
+            background: #5a66c9;
+            transform: translateY(-2px);
+        }
+
+        /* Alertes (Erreurs / Déconnexion) */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.8rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .alert-error {
+            background: #ffe0e3;
+            color: var(--color-danger);
+            border: 1px solid var(--color-danger);
+        }
+        .alert-success {
+            background: #e0ffef;
+            color: #0b8a5c;
+            border: 1px solid var(--color-success);
+        }
+    </style>
 </head>
 
 <body>
-    <div class="center-container">
+
+<div class="login-container">
+    <div class="login-header">
+        <!--<span class="material-icons-sharp" style="font-size: 4rem; color: var(--color-primary);">lock</span>-->
+        <span><img src="/imgs/lock.svg"></span>
+        <h2>Pharmacie Humanophar</h2>
+        <p>Connectez-vous pour accéder au dashboard</p>
+    </div>
+
+    <div th:if="${param.error}" class="alert alert-error">
+        Nom d'utilisateur ou mot de passe incorrect.
+    </div>
+
+    <div th:if="${param.logout}" class="alert alert-success">
+        Vous avez été déconnecté avec succès.
+    </div>
+
+    <form th:action="@{/login}" method="post">
+        <div class="form-group">
+            <!--<label for="username">Utilisateur</label>-->
+            <input type="text" id="username" name="username" class="form-control" placeholder="Entrez votre nom d'utilisateur" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <!--<label for="password">Mot de passe</label>-->
+            <div class="password-wrapper">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Entrez votre mot de passe" required>
+                <img src="/imgs/visibility_off.svg" class="toggle-password" id="eyeicon">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-login">Se Connecter</button>
+    </form>
+</div>
+    <!--<div class="center-container">
         <div class="login-container">
-             <h2>Connexion</h2>
+             <h2>Pharmacie Humanophar</h2>
+            <p>Connectez-vous pour accéder au dashboard</p>
+
+            <div th:if="${param.error}" class="alert alert-error">
+                Nom d'utilisateur ou mot de passe incorrect.
+            </div>
+
+            <div th:if="${param.logout}" class="alert alert-success">
+                Vous avez été déconnecté avec succès.
+            </div>
+
              <form action="/login" method="post">
                 <input type="text" name="username" placeholder="Nom d'utilisateur" required>
                 <div class="password-container">
                     <input type="password"  id="password" name="password" placeholder="Mot de passe" required>
                     <img src="/imgs/visibility_off.svg" class="toggle-password" id="eyeicon">
-                    <!--<span class="toggle-password material-icons-sharp" id="eyeicon">visibility</span>-->
+                    <span class="toggle-password material-icons-sharp" id="eyeicon">visibility</span>
                 </div>
                 <button type="submit">Se connecter</button>
              </form>
         </div>
-    </div>
+    </div>-->
     <!--<script th:src="@{/js/main.js}" defer></script>-->
     <script>
         let eyeicon = document.getElementById("eyeicon");

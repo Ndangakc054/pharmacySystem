@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SessionListener implements HttpSessionIdListener {
+
     @Override
     public void sessionIdChanged(HttpSessionEvent event, String oldSessionId) {
         String newSessionId = event.getSession().getId();

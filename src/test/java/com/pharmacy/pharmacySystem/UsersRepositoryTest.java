@@ -33,7 +33,7 @@ public class UsersRepositoryTest {
         String hashedPassword = passwordEncoder1.encode("ndanga4554");
         System.out.println("Hashed password length: "+hashedPassword.length());
         Users user = new Users();
-        user.setNomUtilisateur("Linuxer31");
+        user.setNomUtilisateur("Kenny");
         user.setMotDePasse(hashedPassword);
         user.setType("ADMIN");
 

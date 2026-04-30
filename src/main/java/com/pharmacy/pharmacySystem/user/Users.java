@@ -3,7 +3,6 @@ package com.pharmacy.pharmacySystem.user;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pharmacy.pharmacySystem.invoices.Invoices;
 import com.pharmacy.pharmacySystem.sales.Sales;
-import com.pharmacy.pharmacySystem.salesFiles.SalesFiles;
 import jakarta.persistence.*;
 
 import java.util.Set;

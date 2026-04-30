@@ -11,6 +11,7 @@ import com.pharmacy.pharmacySystem.invoices.Invoices;
 import com.pharmacy.pharmacySystem.invoices.InvoicesRepository;
 import com.pharmacy.pharmacySystem.drugs.Drugs;
 import com.pharmacy.pharmacySystem.drugs.DrugsRepository;
+import com.pharmacy.pharmacySystem.stock.Stock;
 import com.pharmacy.pharmacySystem.stock.StockRepository;
 import com.pharmacy.pharmacySystem.user.Users;
 import com.pharmacy.pharmacySystem.user.UsersRepository;
@@ -23,11 +24,14 @@ import java.io.ByteArrayOutputStream;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+//import java.sql.Date;
 
 @Service
 @Transactional
@@ -43,46 +47,50 @@ public class SalesService {
         //return (List<Sales>) repo.findAll();
         return (List<Sales>) repo.findAllSalesByDateSaleDesc();
     }
+    public List<Sales> listSalesByDate(LocalDate dateVente) {
+        return repo.findByDateVente(dateVente);
+    }
+
     public Invoices saveSales(SalesForm salesForm) {
         //Vérifier que la facture est vide
         if (salesForm.getItems() == null || salesForm.getItems().isEmpty()) {
             throw new RuntimeException("Impossible de valider : la facture est vide !");
         }
-       // Récupérer l'utilisateur
-       Users user = repoUser.findById(salesForm.getUserId())
-               .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé !"));
+        // Récupérer l'utilisateur
+        Users user = repoUser.findById(salesForm.getUserId())
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé !"));
 
         // Vérification du nom de l'utilisateur
         if(!user.getNomUtilisateur().equals(salesForm.getUserName())) {
             throw new RuntimeException("Incohérence détectée dans les données utilisateur !");
         }
 
-       // Créer une liste pour stocker les ventes
-       List<Sales> salesList = new ArrayList<>();
+        // Créer une liste pour stocker les ventes
+        List<Sales> salesList = new ArrayList<>();
 
-       // Parcourir les items du formulaire pour créer les ventes
-       for (SalesItem item : salesForm.getItems()) {
-          Drugs drug = repoDrugs.findById(item.getIdDrug())
-                   .orElseThrow(() -> new RuntimeException("Médicament non trouvé : " + item.getDrugName()));
-           //Vérifier le stock disponible
-           Integer availableQuantity = stockRepo.getTotalQuantityByDrugName(drug.getIdDrug());
-           if(availableQuantity < item.getQuantity()) {
-               throw new RuntimeException("Stock insuffisant pour " + drug.getNameDrug() +
-                                           ". Disponible: " + availableQuantity +
-                                            ".Demandé: " + item.getQuantity());
-           }
-           Sales sale = new Sales();
-           sale.setDrug(drug);
-           sale.setNameDrug(drug.getNameDrug());
-           sale.setQuantity(item.getQuantity());
-           sale.setPrixUnitaire(item.getUnitPrice());
-           sale.setPrixTotal(item.getTotalAmount());
-           sale.setUser(user);
-           sale.setUserName(user.getNomUtilisateur());
-           sale.setDateVente(LocalDateTime.now());
+        // Parcourir les items du formulaire pour créer les ventes
+        for (SalesItem item : salesForm.getItems()) {
+            Drugs drug = repoDrugs.findById(item.getIdDrug())
+                    .orElseThrow(() -> new RuntimeException("Médicament non trouvé : " + item.getDrugName()));
+            //Vérifier le stock disponible
+            Integer availableQuantity = stockRepo.getTotalQuantityByDrugName(drug.getIdDrug());
+            if(availableQuantity < item.getQuantity()) {
+                throw new RuntimeException("Stock insuffisant pour " + drug.getNameDrug() +
+                        ". Disponible: " + availableQuantity +
+                        ".Demandé: " + item.getQuantity());
+            }
+            Sales sale = new Sales();
+            sale.setDrug(drug);
+            sale.setNameDrug(drug.getNameDrug());
+            sale.setQuantity(item.getQuantity());
+            sale.setPrixUnitaire(item.getUnitPrice());
+            sale.setPrixTotal(item.getTotalAmount());
+            sale.setUser(user);
+            sale.setUserName(user.getNomUtilisateur());
+            sale.setDateVente(LocalDateTime.now());
 
-           salesList.add(sale);
-       }
+            salesList.add(sale);
+        }
 
         // Générer le PDF de la facture
         byte[] pdfBytes;
@@ -97,11 +105,12 @@ public class SalesService {
         invoice.setUser(user);
         invoice.setDateVente(LocalDateTime.now());
         invoice.setPdfInvoice(pdfBytes);
+        invoice.setInvoiceName("facture_" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + ".pdf");
 
         // Sauvegarder la facture pour obtenir son ID
         invoice = invoicesRepository.save(invoice);
         /**Log pour la facture
-        historyService.logInsert("factures", invoice);**/
+         historyService.logInsert("factures", invoice);**/
 
         // Associer la facture aux ventes avant de les sauvegarder
         for(Sales sale : salesList) {
@@ -109,89 +118,115 @@ public class SalesService {
             sale.setInvoice(invoice);
         }
 
-       // Sauvegarder les ventes AVANT de créer la facture
-       repo.saveAll(salesList);
+        // Sauvegarder les ventes AVANT de créer la facture
+        repo.saveAll(salesList);
         /**Log pour chaque vente
-        salesList.forEach(sale ->
-                historyService.logInsert("ventes", sale));**/
+         salesList.forEach(sale ->
+         historyService.logInsert("ventes", sale));**/
 
-       // Retourner la facture créée
-       return invoice;
+        // Retourner la facture créée
+        return invoice;
     }
     public byte[] generateInvoicePdf(SalesForm salesForm, Users user) throws IOException {
-       try {
-           ByteArrayOutputStream baos = new ByteArrayOutputStream();
-           PdfWriter writer = new PdfWriter(baos);
-           PdfDocument pdfDoc = new PdfDocument(writer);
-           Document document = new Document(pdfDoc);
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc);
 
-           // Débogage : Afficher les médicaments dans la console
-           System.out.println("Nombre de médicaments dans la facture : " + salesForm.getItems().size());
-           for (SalesItem item : salesForm.getItems()) {
-               //System.out.println("Médicament : " + item.getDrugName() + ", Quantité : " + item.getQuantity());
-              /** Drugs drug = repoDrugs.findById(item.getIdDrug())
-                       .orElseThrow(()-> new RuntimeException("Médicaments non trouvé"));**/
-           }
+            // Récupération de la dernière facture
+            Invoices lastInvoice = invoicesRepository.findTopByOrderByIdInvoiceDesc();
+            Integer invoiceNumber;
 
-           // Titre
-           document.add(new Paragraph("PHARAMACIE WHU-TANG")
-                   .setTextAlignment(TextAlignment.CENTER)
-                   .setFontSize(18)
-                   .setBold());
-           //INFORMATION SUR LA FACTURE
-           document.add(new Paragraph("Facture N° : ")
-                   .setTextAlignment(TextAlignment.LEFT));
-           document.add(new Paragraph("Date : " +LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
-                   .setTextAlignment(TextAlignment.LEFT));
-           document.add(new Paragraph("Servi par : " + user.getNomUtilisateur()))
-                   .setTextAlignment(TextAlignment.LEFT);
-           document.add(new Paragraph(" "));// Espacement
+            if (lastInvoice == null) {
+                //Première facture
+                invoiceNumber = 1;
+            } else {
+                invoiceNumber = lastInvoice.getIdInvoice() + 1;
+            }
 
-           // En-tête des articles
-           document.add(new Paragraph("DETAIL DES MÉDICAMENTS")
-                   .setTextAlignment(TextAlignment.LEFT)
-                   .setBold());
+            /**Integer valueToAdd = 1;
+            Integer invoiceNumber;
+            invoiceNumber = invoice.getIdInvoice() + valueToAdd;**/
 
-           // Tableau des médicaments
-           Table table = new Table(UnitValue.createPercentArray(4)).useAllAvailableWidth();
-           table.addHeaderCell("Médicament");
-           table.addHeaderCell("Quantité");
-           table.addHeaderCell("Prix Unitaire");
-           table.addHeaderCell("Total");
+            // Récupérer l'année et le mois actuels
+            YearMonth current = YearMonth.now();
+            String formattedCurrent = current.format(DateTimeFormatter.ofPattern("yyyyMM"));
 
-           //Ajout des médicaments dans la facture
-           for (SalesItem item : salesForm.getItems()) {
-               table.addCell(item.getDrugName());
-               table.addCell(String.valueOf(item.getQuantity()));
-               table.addCell(String.format("%.2f €", item.getUnitPrice()));
-               table.addCell(String.format("%.2f €", item.getTotalAmount()));
-           }
+            // Débogage : Afficher les médicaments dans la console
+            System.out.println("Nombre de médicaments dans la facture : " + salesForm.getItems().size());
+            for (SalesItem item : salesForm.getItems()) {
+                //System.out.println("Médicament : " + item.getDrugName() + ", Quantité : " + item.getQuantity());
+                /** Drugs drug = repoDrugs.findById(item.getIdDrug())
+                 .orElseThrow(()-> new RuntimeException("Médicaments non trouvé"));**/
+            }
+            // Titre
+            document.add(new Paragraph("PHARMACIE HUMANOPHAR")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(18)
+                    .setBold());
+            //INFORMATION SUR LA FACTURE
+            document.add(new Paragraph("NIF : 4000020661"))
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(new Paragraph("Téléphone : 79970620"))
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(new Paragraph("Commune Mukaza"))
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(new Paragraph("Adresse : Peuple Murundi"))
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(new Paragraph("Date : " +LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
+                    .setTextAlignment(TextAlignment.LEFT));
+            document.add(new Paragraph("Servi par : " + user.getNomUtilisateur()))
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(new Paragraph("Facture N° : " + invoiceNumber + " / " + formattedCurrent)
+                    .setTextAlignment(TextAlignment.LEFT));
+            document.add(new Paragraph(" "));// Espacement
 
-           //Ajout di total général
-           BigDecimal totalAmount = salesForm.getItems().stream()
-                   .map(SalesItem::getTotalAmount)
-                   .reduce(BigDecimal.ZERO, BigDecimal::add);
-           table.addCell("Total :");
-           table.addCell("");
-           table.addCell("");
-           table.addCell(String.format("%.2f €", totalAmount));
+            // En-tête des articles
+            document.add(new Paragraph("DETAIL DES MÉDICAMENTS")
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setBold());
 
-           document.add(table);
+            // Tableau des médicaments
+            Table table = new Table(UnitValue.createPercentArray(4)).useAllAvailableWidth();
+            table.addHeaderCell("Médicament");
+            table.addHeaderCell("Quantité");
+            table.addHeaderCell("Prix Unitaire");
+            table.addHeaderCell("Total");
 
-           document.add(new Paragraph("MONTANT À PAYER: " + totalAmount + " €")
-                   .setTextAlignment(TextAlignment.RIGHT)
-                   .setBold());
-           // Informations supplémentaires
-           document.add(new Paragraph(" ")); // Espacement
-           document.add(new Paragraph("MERCI!!!!")
-                   .setTextAlignment(TextAlignment.CENTER));
+            //Ajout des médicaments dans la facture
+            for (SalesItem item : salesForm.getItems()) {
+                table.addCell(item.getDrugName());
+                table.addCell(String.valueOf(item.getQuantity()));
+                table.addCell(String.format("%.2f Fbu", item.getUnitPrice()));
+                table.addCell(String.format("%.2f Fbu", item.getTotalAmount()));
+            }
 
-           document.close();
-           return baos.toByteArray();
-       } catch (Exception e) {
-           System.err.println("Erreur lors de la génération du PDF : " + e.getMessage());
-           throw e;
-       }
+            //Ajout di total général
+            BigDecimal totalAmount = salesForm.getItems().stream()
+                    .map(SalesItem::getTotalAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            table.addCell("Total :");
+            table.addCell("");
+            table.addCell("");
+            table.addCell(String.format("%.2f Fbu", totalAmount));
+
+            document.add(table);
+
+            document.add(new Paragraph("MONTANT À PAYER: " + totalAmount + " Fbu")
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBold());
+            // Informations supplémentaires
+            document.add(new Paragraph(" ")); // Espacement
+            document.add(new Paragraph("MERCI!!!!")
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.close();
+            return baos.toByteArray();
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la génération du PDF : " + e.getMessage());
+            throw e;
+        }
     }
     public Sales get(Integer idSale) throws  SalesNotFoundException {
         Optional<Sales> result = repo.findById(idSale);
@@ -210,6 +245,52 @@ public class SalesService {
             throw new SalesNotFoundException("Aucune vente n'a été trouvée avec l'identification : " +idSale);
         }
         repo.deleteById(idSale);
+    }
+
+    //SERVICE POUR LE VENTES QUOTIDIENNES
+    /**public Map<LocalDate, BigDecimal> getDailySales() {
+        List<Object[]> results = repo.getDailySalesTotals();
+        return results.stream()
+                .collect(Collectors.toMap(
+                        arr -> ((LocalDate) arr[0]), // Conversion en LocalDate
+                        arr -> (BigDecimal) arr[1]
+                ));
+    }**/
+
+    //SERVICE POUR LES VENTES DU JOUR
+    public BigDecimal getTodaySalesTotal() {
+        return repo.getTodaySales(LocalDate.now());
+    }
+
+    public BigDecimal getSalesTotalByDate(LocalDate date) {
+        return repo.getSalesTotalByDate(date);
+    }
+
+    public List<Sales> getSalesByDate(LocalDate date) {
+        // Utilise la méthode existante dans votre repository
+        return repo.findByDateVente(date);
+    }
+
+    public void update(Sales sale) throws SalesNotFoundException {
+        Optional<Sales> existingSale = repo.findById(sale.getIdSale());
+        if (!existingSale.isPresent()) {
+            throw new SalesNotFoundException("Vente non trouvée ID: " + sale.getIdSale());
+        }
+        Sales updateSale = existingSale.get();
+        updateSale.setQuantity(sale.getQuantity());
+        updateSale.setPrixUnitaire(sale.getPrixUnitaire());
+        updateSale.setPrixTotal(sale.getPrixTotal());
+
+        repo.save(updateSale);
+    }
+
+    public List<Sales> findByDate(LocalDate date) {
+        // Début du jour : 2026-01-10T00:00:00
+        LocalDateTime startOfDay = date.atStartOfDay();
+        // Fin du jour : 2026-01-10T23:59:59.999
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        return repo.findByDateVenteBetween(startOfDay, endOfDay);
     }
 }
 

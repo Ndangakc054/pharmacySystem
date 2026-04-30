@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacie WUTANG</title>
+    <title>Pharmacie HUMANOPHAR</title>
     <!-- ====MATERIAL ICON=== -->
     <!--<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
     rel="stylesheet">-->
@@ -21,7 +21,7 @@
             <div class="top">
                <div class="logo">
                   <img src="/imgs/pharmacy.png">
-                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
+                  <h2>PHARMACIE<span class="danger">HUMANOPHAR</span></h2>
                </div>
             </div>
             <div class="close" id="close-btn">
@@ -66,7 +66,7 @@
                <form th:action="@{/logout}" method="post">
                   <button type="submit">
                      <span><img src="/imgs/logout.svg"></span>
-                     <h3>Logout</h3>
+                     <h3>Se déconnecter</h3>
                   </button>
                </form>
             </div>
@@ -113,8 +113,7 @@
                         </div>
                         <div class="form-group">
                            <label for="drugQuantity">Quantité:</label>
-                           <input type="text" name="drugQuantity" id="drugQuantity" th:field="*{quantity}" maxlength="11"
-                              required>
+                           <input type="number" name="drugQuantity" id="drugQuantity" step="1" min="0" max="200" th:field="*{quantity}" maxlength="11" required>
                         </div>
                         <div class="form-group">
                            <label for="drugUnitPrice">Prix d'achat unitaire:</label>
@@ -147,16 +146,31 @@
                   <span class="material-icons-sharp">menu</span>
                </button>
                <div class="theme-toggler">
-                  <span class="active"><img src="/imgs/light_mode.svg"></span>
+                  <span><img src="/imgs/light_mode.svg"></span>
                   <span><img src="/imgs/dark_mode.svg"></span>
                </div>
-               <div class="profile">
-                  <div class="info">
-                     <p><b th:text="${loggedUser.nomUtilisateur}">Nom</b></p>
-                     <small class="text-muted" th:text="${loggedUser.type}">Role</small>
+               <div class="profile" id="profileTrigger" style="cursor: pointer;">
+                  <div class="info" th:if="${loggedUser != null}">
+                     <p><b th:text="${loggedUser?.nomUtilisateur}">Nom</b></p>
+                     <small class="text-muted" th:text="${loggedUser?.type}">Role</small>
                   </div>
+
                   <div class="profile-photo">
                      <img src="/imgs/profile-1.jpg" alt="">
+                  </div>
+
+                  <div id="user-popup" class="user-popup" style="display: none;" th:if="${loggedUser != null}">
+                     <div class="popup-header">
+                        <h3 th:text="${loggedUser.nomUtilisateur}">Nom</h3>
+                        <p th:text="${loggedUser.type}">Role</p>
+                     </div>
+                     <hr>
+                     <div class="popup-body">
+                        <a th:href="@{/profile/edit/{id}(id=${loggedUser.Id})}" class="edit-link">
+                           <span><img src="/imgs/manage_accounts.svg"></span>
+                           Modifier votre profil
+                        </a>
+                     </div>
                   </div>
                </div>
             </div>

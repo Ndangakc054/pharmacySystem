@@ -4,70 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacie WUTANG</title>
-    <!-- ====MATERIAL ICON=== -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
-    rel="stylesheet">
+    <title>Pharmacie HUMANOPHAR</title>
     <!-- ==== STYLESHEET === -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
    </head>
 
    <body>
       <div class="container">
-         <aside>
-            <div class="top">
-               <div class="logo">
-                  <img src="/imgs/pharmacy.png">
-                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
-               </div>
-            </div>
-            <div class="close" id="close-btn">
-               <span class="material-icons-sharp">close</span>
-            </div>
-            <div class="sidebar">
-               <a th:href="@{/home_user}">
-                  <span><img src="/imgs/grid_view.svg"></span>
-                  <h3>Accueil</h3>
-               </a>
-               
-               <a th:href="@{/drugs_user}">
-                  <span><img src="/imgs/medication_liquid.svg"></span>
-                  <h3>Médicaments</h3>
-               </a>
-   
-               <a th:href="@{/stock_user}">
-                  <span><img src="/imgs/inventory_2.svg"></span>
-                  <h3>Inventaire</h3>
-               </a>
-   
-               <a th:href="@{/sales_user}">
-                  <span><img src="/imgs/paid.svg"></span>
-                  <h3>Ventes</h3>
-               </a>
-   
-               <a th:href="@{/purchases_user}">
-                  <span><img src="/imgs/inventory.svg"></span>
-                  <h3>Ravitaillement</h3>
-               </a>
-   
-               <a href="#" class="active">
-                  <span><img src="/imgs/fact_check.svg"></span>
-                  <h3>commandes</h3>
-               </a>
-   
-               <a th:href="@{/suppliers_user}">
-                  <span><img src="/imgs/person_outline.svg"></span>
-                  <h3>Fournisseurs</h3>
-               </a>
-   
-               <form th:action="@{/logout}" method="post">
-                  <button type="submit">
-                     <span><img src="/imgs/logout.svg"></span>
-                     <h3>Logout</h3>
-                  </button>
-               </form>
-            </div>
-         </aside>
+         <div th:replace="~{fragments :: sidebarUser(activeLink='orders')}"></div>
          <!---------------------- END OF ASIDE -------------------------->
          <main>
             <h1>Réquisition des médicaments</h1>
@@ -82,26 +26,24 @@
                </div>
                <table>
                   <thead>
-                     <tr>
-                        <th>Nom</th>
-                        <th>Quantité</th>
-                        <!--<th></th>
-                        <th></th>-->
-                     </tr>
+                  <tr>
+                     <th>Nom</th>
+                     <th>Quantité</th>
+                  </tr>
                   </thead>
                   <tbody id="stockTableBody">
-                     <th:block th:each="stock :${listStock}">
-                        <tr>
-                           <td class="stock-name">[[${stock.drug.nameDrug}]]</td>
-                           <td>[[${stock.quantity}]]</td>
-                           <!--<td>
-                              <span class="material-icons-sharp add-icon" onclick="addToPurchaseList(this)">add_circle_outline</span>
-                           </td>
-                           <td>
-                              <span class="material-icons-sharp cancel-icon" onclick="removeFromPurchaseListByLeft(this)">remove_circle_outline</span>
-                           </td>-->
-                        </tr>
-                     </th:block>
+                  <th:block th:each="stock :${listStock}">
+                     <tr>
+                        <td class="stock-name">[[${stock.drug.nameDrug}]]</td>
+                        <td>[[${stock.quantity}]]</td>
+                        <td>
+                           <span class="add-icon" onclick="addToPurchaseList(this)"><img src="/imgs/add_circle_outline.svg"></span>
+                        </td>
+                        <td>
+                           <span class="cancel-icon" onclick="removeFromPurchaseListByLeft(this)"><img src="/imgs/remove_circle_outline.svg"></span>
+                        </td>
+                     </tr>
+                  </th:block>
                   </tbody>
                </table>
             </div> 
@@ -114,47 +56,63 @@
                   <span class="material-icons-sharp">menu</span>
                </button>
                <div class="theme-toggler">
-                  <span class="active"><img src="/imgs/light_mode.svg"></span>
+                  <span><img src="/imgs/light_mode.svg"></span>
                   <span><img src="/imgs/dark_mode.svg"></span>
                </div>
-               <div class="profile">
-                  <div class="info">
-                     <p><b th:text="${loggedUser.nomUtilisateur}">Nom</b></p>
-                     <small class="text-muted" th:text="${loggedUser.type}">Role</small>
+               <div class="profile" id="profileTrigger" style="cursor: pointer;">
+                  <div class="info" th:if="${loggedUser != null}">
+                     <p><b th:text="${loggedUser?.nomUtilisateur}">Nom</b></p>
+                     <small class="text-muted" th:text="${loggedUser?.type}">Role</small>
                   </div>
+
                   <div class="profile-photo">
                      <img src="/imgs/profile-1.jpg" alt="">
+                  </div>
+
+                  <div id="user-popup" class="user-popup" style="display: none;" th:if="${loggedUser != null}">
+                     <div class="popup-header">
+                        <h3 th:text="${loggedUser.nomUtilisateur}">Nom</h3>
+                        <p th:text="${loggedUser.type}">Role</p>
+                     </div>
+                     <hr>
+                     <div class="popup-body">
+                        <a th:href="@{/profile/edit/{id}(id=${loggedUser.Id})}" class="edit-link">
+                           <span><img src="/imgs/manage_accounts.svg"></span>
+                           Modifier votre profil
+                        </a>
+                     </div>
                   </div>
                </div>
             </div>
             <!-- END OF TOP -->
             <!-- ORDERS -->
-            <!--<div class="orders-container">
+            <div class="orders-container">
                <h2>Fiche de réquisition</h2>
                <form  id="ordersForm" >
                   <table>
                      <thead>
-                        <tr>
-                           <th>Name</th>
-                           <th>Quantity</th>
-                        </tr>
+                     <tr>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                     </tr>
                      </thead>
                      <tbody id="orders-body">
-                         <!-Place for drugs added-->
-                         
-                     <!--</tbody>
+                     <!-Place for drugs added-->
+
+                     </tbody>
                   </table>
-                  <div class="orders-info">
-                     <p><strong>Date de réquisition :</strong><span id="sale-date"></span></p>
-                  </div>
                   <div class="orders-buttons">
-                     <button type="button" id="validate-file">
-                           <span class="material-icons-sharp">check_circle</span>
-                           <h3>Valider</h3>
+                     <button type="button" id="validate-file" onclick="return confirm('Voulez-vous vraiment valider ce fiche de réquisition ?')">
+                        <span><img src="/imgs/check_circle.svg"></span>
+                        <h3>Valider</h3>
+                     </button>
+                     <button type="button" id="clear-file">
+                        <span><img src="/imgs/delete_sweep.svg"></span>
+                        <h3>Vider</h3>
                      </button>
                   </div>
                </form>
-            </div>-->
+            </div>
             <div class="recent-updates"></div>
          </div>
       </div>>

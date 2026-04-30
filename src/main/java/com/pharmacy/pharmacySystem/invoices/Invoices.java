@@ -30,6 +30,9 @@ public class Invoices {
     @Column(name = "pdf_invoice", columnDefinition = "LONGBLOB")
     private byte[] pdfInvoice;
 
+    @Column(name = "invoice_name", nullable = false, length = 255)
+    private String invoiceName;
+
     //Relation 1:N avec Sales
     @JsonIgnore
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
@@ -73,5 +76,13 @@ public class Invoices {
 
     public void setSales(List<Sales> sales) {
         this.sales = sales;
+    }
+
+    public String getInvoiceName() {
+        return invoiceName;
+    }
+
+    public void setInvoiceName(String invoiceName) {
+        this.invoiceName = invoiceName;
     }
 }

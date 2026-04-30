@@ -1,0 +1,136 @@
+   <!DOCTYPE html>
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacie HUMANOPHAR</title>
+    <!-- ==== STYLESHEET === -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="htp" rel="stylesheet">
+   </head>
+
+   <body>
+      <div class="container">
+         <div th:replace="~{fragments :: sidebarAdmin(activeLink='purchases')}"></div>
+         <!---------------------- END OF ASIDE -------------------------->
+         <main>
+            <h1>Achats</h1>
+            <div class="stock-container">
+               <div class="search-container">
+                  <span class="search-icon" onclick="toggleSearch()"><img src="/imgs/search.svg"></span>
+                     <input type="search" id="searchInput" class="search-input" placeholder="Recherchez ici..." onkeyup="filterTable()">
+               </div>
+            </div>
+
+            <!--  ADD BUTTON -->
+            <div class="button-container">
+               <button class="action-button">
+                  <a th:href="@{/addPurchase}">Ajouter</a>
+               </button>
+            </div>
+
+            <div class="recent-purchases">
+               <div class="title-with-pack">
+                  <a th:href="@{/purchases}" class="back-icon">
+                     <span><img src="/imgs/arrow_back.svg" alt=""></span>
+                  </a>
+               </div>
+               <h2>Liste des achats</h2>
+               <table>
+                  <thead>
+                     <tr>
+                        <th>Nom</th>
+                        <th>Fournisseur</th>
+                        <th>Quantité</th>
+                        <th>P U d'achat</th>
+                        <th>P T</th>
+                        <th>Date d'achat</th>
+                        <th>Date d'expiration</th>
+                        <th></th>
+                        <th></th>
+                     </tr>
+                  </thead>
+                  <tbody id="tableBody">
+                     <th:block th:each="purchase :${listPurchases}">
+                        <tr>
+                           <td class="name">[[${purchase.drug.nameDrug}]]</td>
+                           <td>[[${purchase.supplier.nomFournisseur}]]</td>
+                           <td>[[${purchase.quantity}]]</td>
+                           <td>[[${purchase.prixAchatUnitaire}]]</td>
+                           <td>[[${purchase.prixAchatTotal}]]</td>
+                           <td th:text = "${#temporals.format(purchase.dateAchat, 'dd/MM/yyyy')}"></td>
+                           <td th:text="${#temporals.format(purchase.dateExpiration, 'dd/MM/yyyy')}"></td>
+                           <td>
+                              <a th:href="@{|/purchases/edit/${purchase.idPurchase}|}">
+                                 <span class="edit-icon">Éditer</span>
+                              </a>
+                           </td>
+                           <td>
+                              <a th:href="@{|/purchases/delete/${purchase.idPurchase}|}"
+                                 onclick="return confirm('Voulez-vous vraiment supprimer cette achat ?')">
+                                 <span class="delete-icon">Supprimer</span>
+                              </a>
+                           </td>
+                        </tr>
+                     </th:block>
+                  </tbody>
+               </table>
+            </div>
+         </main>
+         <!---------------------- END OF MAIN -------------------------->
+         <div class="rigth">
+            <div class="top">
+               <button id="menu-btn">
+                  <span class="material-icons-sharp">menu</span>
+               </button>
+               <div class="theme-toggler">
+                  <span class="active"><img src="/imgs/light_mode.svg"></span>
+                  <span><img src="/imgs/dark_mode.svg"></span>
+               </div>
+               <div class="profile">
+                  <div class="info">
+                     <p><b th:text="${loggedUser.nomUtilisateur}">Nom</b></p>
+                     <small class="text-muted" th:text="${loggedUser.type}">Role</small>
+                  </div>
+                  <div class="profile-photo">
+                     <img src="/imgs/profile-1.jpg" alt="">
+                  </div>
+               </div>
+            </div>
+            <!-- END OF TOP -->
+            <!----------- END OF RECENT UPDATES -------->
+            <!--<div class="purchases-analytics">
+               <div class="item customers">
+                  <div class="right">
+                     <div class="info">
+                        <h2>Total des Achats</h2>
+                        <h2>
+                           <span id="dailyTotal" th:text="${todayPurchasesTotal}">0.00</span>
+                           <span class="danger">Fbu</span>
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+            </div>-->
+       </div>
+      </div>
+
+      <div th:if="${message}" id="notification-modal" class="modal-notification"
+           th:classappend="${status == 'success' ? 'success' : 'error'}">
+
+         <div class="modal-content">
+        <span class="icon">
+            <i class="material-icons-sharp" th:text="${status == 'success' ? 'message' : 'error'}"></i>
+        </span>
+
+            <span class="msg-text" th:text="${message}"></span>
+
+            <div class="progress-bar"></div>
+
+            <span class="close-btn">&times;</span>
+         </div>
+      </div>
+      <script src="/js/main.js" defer></script>
+   </body>
+   </html>

@@ -28,8 +28,8 @@ public class DrugsRepositoryTest {
         drug.setCategorie("Comprime");
         drug.setUniteDeMesure("Boite");
         drug.setQuantiteParUnite(1);
-        drug.setPrixUnitaire(new BigDecimal("60000"));
-        drug.setDateExpiration(LocalDate.of(2026, 1, 1));
+        /**drug.setPrixUnitaire(new BigDecimal("60000"));
+        drug.setDateExpiration(LocalDate.of(2026, 1, 1));**/
 
         Drugs savedDrug = repo.save(drug);
 

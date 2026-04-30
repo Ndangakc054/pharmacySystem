@@ -1,6 +1,8 @@
 package com.pharmacy.pharmacySystem.drugs;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,9 +14,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class DrugsController {
@@ -47,7 +52,8 @@ public class DrugsController {
         return "addDrug_user";
     }
     @PostMapping("/addDrug")
-    public String saveDrug(@ModelAttribute("drug") @Validated Drugs drug, BindingResult result, RedirectAttributes redirectAttributes, Authentication authentication) {
+    public String saveDrug(@ModelAttribute("drug") @Validated Drugs drug, BindingResult result,
+                           RedirectAttributes redirectAttributes, Authentication authentication) {
         if(result.hasErrors()) {
             redirectAttributes.addFlashAttribute("status", "error");
             redirectAttributes.addFlashAttribute("message", "Champs invalides ou vides. Vérifiez les données saisies.");
@@ -75,16 +81,16 @@ public class DrugsController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         try {
             Drugs drug = service.get(idDrug);
-            if (drug.getDateExpiration() != null) {
+            /**if (drug.getDateExpiration() != null) {
                 drug.setDateExpirationFormatted(drug.getDateExpiration().format(formatter));
             } else {
                 drug.setDateExpirationFormatted("");
-            }
+            }**/
             model.addAttribute("drug", drug);
             return "editDrug";
         } catch (DrugsNotFoundException e) {
             redirectAttributes.addFlashAttribute("status", "error");
-            redirectAttributes.addFlashAttribute("message", "Le médicaments n'existe pas !");
+            redirectAttributes.addFlashAttribute("message", "Le médicament n'existe pas !");
             return "redirect:/drugs";
         }
     }
@@ -95,19 +101,14 @@ public class DrugsController {
             return "editDrug";
         }
         try {
-            // Parse the date from the formatted string
-            if(!drug.getDateExpirationFormatted().isEmpty()) {
-                LocalDate dateExpiration = LocalDate.parse(drug.getDateExpirationFormatted(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                drug.setDateExpiration(dateExpiration);
-            }
             System.out.print("Drug Id réçu :" + drug.getNameDrug());
             System.out.print("Données reçues : " +drug);
             service.save(drug);
             redirectAttributes.addFlashAttribute("status", "success");
-            redirectAttributes.addFlashAttribute("message", "La modification du médicament est effectué avec succès");
+            redirectAttributes.addFlashAttribute("message", "La modification est effectuée avec succès");
         } catch (DrugsNotFoundException e) {
             redirectAttributes.addFlashAttribute("status", "error");
-            redirectAttributes.addFlashAttribute("message", "La modification à échoué");
+            redirectAttributes.addFlashAttribute("message", "La modification a échoué");
         }
         return "redirect:/drugs";
     }
@@ -116,13 +117,32 @@ public class DrugsController {
         try {
             service.delete(idDrug);
             redirectAttributes.addFlashAttribute("status","success");
-            redirectAttributes.addFlashAttribute("message","Le médicament a été supprimer avec succès !");
+            redirectAttributes.addFlashAttribute("message","Le médicament a été supprimé avec succès !");
         } catch (DrugsNotFoundException e) {
             redirectAttributes.addFlashAttribute("status", "error");
-            redirectAttributes.addFlashAttribute("message", "Le médicaments n'existe pas !");
+            redirectAttributes.addFlashAttribute("message", "Le médicament n'existe pas !");
         }
         return "redirect:/drugs";
     }
+
+    @GetMapping("/drugs/export/excel")
+    public void exportDrugsListToExcel(HttpServletResponse response) throws IOException {
+        response.setContentType("application/octet-stream");
+
+        // Définir le nom du fichier avec la date actuelle c'est plus pro
+        String headerKey= "Content-Disposition";
+        String headerValue = "attachment; filename=DrugsList_" +LocalDate.now() + ".xlsx";
+        response.setHeader(headerKey, headerValue);
+
+        // Récupérer tous les médicaments depuis la base de données
+        List<Drugs> listDrugs = service.listAll();
+
+        DrugsListExcelExporter excelExporter = new DrugsListExcelExporter(listDrugs);
+
+        excelExporter.export(response);
+
+    }
+
     private boolean isAdmin(Authentication authentication) {
         if(authentication == null) return false;
         return authentication.getAuthorities().stream()

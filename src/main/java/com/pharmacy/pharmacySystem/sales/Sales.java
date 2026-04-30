@@ -49,6 +49,16 @@ public class Sales {
     @JoinColumn(name = "invoice_id", nullable = false)
     private Invoices invoice;
 
+    // Champs transients pour le formatage des dates
+    @Transient
+    private String dateVenteFormatted;
+
+    public String getDateVenteFormatted() {
+        return dateVenteFormatted;
+    }
+    public void setDateVenteFormatted(String dateVenteFormatted) {
+        this.dateVenteFormatted = dateVenteFormatted;
+    }
     //Getters et setters
 
 

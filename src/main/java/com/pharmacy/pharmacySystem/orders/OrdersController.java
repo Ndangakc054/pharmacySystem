@@ -1,30 +1,36 @@
 package com.pharmacy.pharmacySystem.orders;
 
-import com.itextpdf.commons.utils.Base64;
+
 import com.itextpdf.io.exceptions.IOException;
-import com.pharmacy.pharmacySystem.purchaseFiles.PurchaseFiles;
-import com.pharmacy.pharmacySystem.purchaseFiles.PurchaseFilesRepository;
+import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import com.pharmacy.pharmacySystem.stock.Stock;
 import com.pharmacy.pharmacySystem.stock.StockService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.OutputStream;
-import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+
+import static javax.swing.text.StyleConstants.setBold;
 
 @Controller
 public class OrdersController {
     @Autowired private OrdersService service;
     @Autowired private StockService stockService;
-    @Autowired private PurchaseFilesRepository filesRepo;
 
 
 
@@ -41,11 +47,6 @@ public class OrdersController {
         model.addAttribute("listStock", listStock);
         return "orders_user";
     }
-    /**@PostMapping("/validate")
-    public ResponseEntity<String> validateOrder(@RequestBody List<OrdersDTO> ordersDTOList) {
-        service.saveOrders(ordersDTOList);
-        return ResponseEntity.ok("Commandes enregistrées et PDF généré avec succès");
-    }**/
 
     @PostMapping("/refreshOrders")
     @ResponseBody
@@ -53,47 +54,61 @@ public class OrdersController {
         return service.refreshOrders();
     }
 
-    @PostMapping("/orders/save")
-    public ResponseEntity<?> saveOrders(@RequestBody OrdersForm ordersForm) {
-        try {
-            PurchaseFiles file = service.saveOrders(ordersForm);
-            // Retourner l'ID du fichier ou une URL pour le PDF
-            return ResponseEntity.ok().body(Map.of(
-                    "message", "Fiche validée avec succès !",
-                    "pdfUrl", "/orders/pdf/" + file.getIdFile()
-            ));
+    @PostMapping("/requisition/generate-pdf")
+    public ResponseEntity<byte[]> generateRequisitionPdf(@RequestBody List<Map<String, Object>> items) throws IOException {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc);
+
+            // Titre
+
+
+            document.add(new Paragraph("PHARMACIE HUMANOPHAR")
+                    .setTextAlignment(TextAlignment.LEFT));
+            //INFORMATION SUR LA FACTURE
+            document.add(new Paragraph("NIF : 4000020661"))
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(new Paragraph("Téléphone : 79970620"))
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(new Paragraph("Date : " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+            document.add(new Paragraph("FICHE DE REQUISITION")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(14)
+                    .setBold());
+            document.add(new Paragraph(" ")); // Espacement
+
+            // Tableau (2 colonnes : Médicament et Quantité)
+            Table table = new Table(UnitValue.createPercentArray(new float[]{3, 1, 1, 1})).useAllAvailableWidth();
+            table.addHeaderCell(new Cell().add(new Paragraph("Médicament").setBold()));
+            table.addHeaderCell(new Cell().add(new Paragraph("Quantité").setBold()));
+            table.addHeaderCell(new Cell().add(new Paragraph("Prix Unitaire").setBold()));
+            table.addHeaderCell(new Cell().add(new Paragraph("Prix Total").setBold()));
+
+            // Remplissage des données reçues du JS
+            for (Map<String, Object> item : items) {
+                table.addCell(item.get("drugName").toString());
+                table.addCell(item.get("quantity").toString());
+                table.addCell("");
+                table.addCell("");
+            }
+
+            document.add(table);
+            document.add(new Paragraph("\nTotal de l'argent : _________________").setTextAlignment(TextAlignment.RIGHT));
+            document.add(new Paragraph("\nSignature : _________________").setTextAlignment(TextAlignment.LEFT));
+
+            document.close();
+
+            // Retour du PDF en tant que tableau de octets
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            // "inline" permet d'ouvrir dans l'onglet au lieu de télécharger directement
+            headers.setContentDisposition(ContentDisposition.inline().filename("requisition.pdf").build());
+
+            return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erreur : " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/orders/pdf/{id}")
-    public ResponseEntity<byte[]> getPdf(@PathVariable Integer id) {
-        PurchaseFiles file = filesRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Fiche de réquisition introuvable"));
-        return ResponseEntity.ok()
-                .header("Content-Type", "application/pdf")
-                .header("Content-Disposition", "inline; filename=commande.pdf")
-                .body(file.getPdfOrders());
-    }
-    /**@GetMapping("/download-pdf/{fileId}")
-    public void downloadPdf(@PathVariable BigInteger fileId, HttpServletResponse response) throws IOException {
-        PurchaseFiles file = filesRepo.findById(fileId)
-                .orElseThrow(() -> new RuntimeException("Fichier non trouvé"));
 
-        //// Vérifiez que le PDF n'est pas null
-        if (file.getPdfOrders() == null) {
-            throw new RuntimeException("Le fichier PDF est vide ou non généré.");
-        }
-
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "inline; filename=commande.pdf");
-
-        // Écrire le PDF dans le flux de réponse
-        try (OutputStream ops = response.getOutputStream()){
-            ops.write(file.getPdfOrders());
-            ops.flush();
-        } catch (java.io.IOException e) {
-            throw new RuntimeException("Erreur lors de l'écriture du PDF dans la réponse", e);
-        }
-    }**/
 }

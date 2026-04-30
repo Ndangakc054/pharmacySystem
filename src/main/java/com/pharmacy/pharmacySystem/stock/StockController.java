@@ -2,7 +2,9 @@ package com.pharmacy.pharmacySystem.stock;
 
 import com.pharmacy.pharmacySystem.drugs.Drugs;
 import com.pharmacy.pharmacySystem.drugs.DrugsRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -10,31 +12,52 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 @Controller
 public class StockController {
     @Autowired private StockService service;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private DrugsRepository drugsRepo;
+    @Autowired private StockRepository repo;
+    @Autowired private StockExcelImportService importService;
 
 
     @GetMapping("/stock")
     public String showStockList(Model model) {
+
+        //Récupérer le total de l'inventaire
+        BigDecimal totalInventory = service.getTotalStockValue();
+        // Formater le montant
+        String formattedInventoryTotal = totalInventory.setScale(2, RoundingMode.HALF_UP)
+                .toPlainString();
+
         List<Stock> listStock = service.listAll();
         model.addAttribute("listStock", listStock);
+        model.addAttribute("totalInventory", formattedInventoryTotal);
         return "stock";
     }
 
     @GetMapping("/stock_user")
     public String showStockListUser(Model model) {
+        //Récupérer le total de l'inventaire
+        BigDecimal totalInventory = service.getTotalStockValue();
+        // Formater le montant
+        String formattedInventoryTotal = totalInventory.setScale(2, RoundingMode.HALF_UP)
+                .toPlainString();
         List<Stock> listStock = service.listAll();
         model.addAttribute("listStock", listStock);
+        model.addAttribute("totalInventory", formattedInventoryTotal);
         return "stock_user";
     }
 
@@ -56,7 +79,7 @@ public class StockController {
     }
     @PostMapping("/addDrugStock")
     public String saveDrugStock(@ModelAttribute("stock") @Validated Stock stock,
-                                @RequestParam("drugId") Integer drugId, BindingResult result,
+                                @RequestParam("drugId") Integer drugId,BindingResult result,
                                 RedirectAttributes redirectAttributes, Authentication authentication) {
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("status", "error");
@@ -69,12 +92,18 @@ public class StockController {
         }
         try {
             Drugs selectedDrug = drugsRepo.findById(drugId)
-                            .orElseThrow(()-> new RuntimeException("Médicaments non trouvé"));
+                            .orElseThrow(()-> new RuntimeException("Médicament non trouvé"));
             //Liez le médicament au stock
             stock.setDrug(selectedDrug);
 
             //pour garder le nom dans la colonne (optionnel)
             stock.setNameDrug(selectedDrug.getNameDrug());
+
+            // Génération du batch ID pour les nouveaux stocks
+            /**if (stock.getBatch() == null || stock.getBatch().isEmpty()) {
+                String batchId = "BATCH_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                stock.setBatch(batchId);
+            }**/
             service.save(stock);
             redirectAttributes.addFlashAttribute("status", "success");
             redirectAttributes.addFlashAttribute("message", "L'ajout du médicament dans le stock a réussi !");
@@ -124,6 +153,10 @@ public class StockController {
         try {
             Drugs drug = drugsRepo.findById(drugId)
                     .orElseThrow(() -> new RuntimeException("Médicament non trouvé"));
+            // Conserver le batch ID existant pour les modifications
+            /**Stock existingStock = repo.findById(stock.getIdStock())
+                    .orElseThrow(() -> new RuntimeException("Stock non trouvé"));
+            stock.setBatch(existingStock.getBatch());**/
             // Parse the date from the formatted string
             if (!stock.getDateExpirationFormatted().isEmpty()) {
                 LocalDate dateExpiration = LocalDate.parse(stock.getDateExpirationFormatted(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -151,10 +184,10 @@ public class StockController {
         try {
             service.delete(idStock);
             redirectAttributes.addFlashAttribute("status", "success");
-            redirectAttributes.addFlashAttribute("message","Le médicament a été supprimer avec succès dans le stock !");
+            redirectAttributes.addFlashAttribute("message","Le médicament a été supprimé avec succès dans le stock !");
         } catch (StockNotFoundException e){
             redirectAttributes.addFlashAttribute("status", "error");
-            redirectAttributes.addFlashAttribute("message","Le médicament n'existe dans le stock");
+            redirectAttributes.addFlashAttribute("message","Le médicament n'existe pas dans le stock");
         }
         return "redirect:/stock";
     }
@@ -172,6 +205,42 @@ public class StockController {
         model.addAttribute("listExpiry", listExpiry);
         return "expiry_user";
     }
+
+    @GetMapping("/stock/export/excel")
+    public void exportToExcel(HttpServletResponse response) throws IOException {
+        response.setContentType("application/octet-stream");
+
+        // Définir le nom du fichier avec la date actuelle c'est plus pro
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=Inventaire_" + LocalDate.now() + ".xlsx";
+        response.setHeader(headerKey, headerValue);
+
+        // Récupérer tout le stock depuis la base de données
+        List<Stock> listStock = service.listAll(); // Adapte selon le nom de ta méthode find all
+
+        InventoryExcelExporter excelExporter = new InventoryExcelExporter(listStock);
+
+        excelExporter.export(response);
+    }
+
+    @PostMapping("/stock/import")
+    public String importExcelInventoryFile(@RequestParam("file")MultipartFile file, RedirectAttributes ra){
+        if (file.isEmpty()){
+            ra.addFlashAttribute("message", "Veuillez sélectionner un fichier !");
+            return "redirect:/stock";
+        }
+
+        try{
+            importService.save(file);
+            ra.addFlashAttribute("status", "success");
+            ra.addFlashAttribute("message", "Importation réussie !");
+        } catch (Exception e) {
+            ra.addFlashAttribute("status", "error");
+            ra.addFlashAttribute("message", "Erreur: " + e.getMessage());
+        }
+        return "redirect:/stock";
+    }
+
     private boolean isAdmin(Authentication authentication) {
         if (authentication == null) return false;
         return authentication.getAuthorities().stream()

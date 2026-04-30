@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.pharmacy.pharmacySystem.audit.BaseEntity;
 import com.pharmacy.pharmacySystem.drugs.Drugs;
 import jakarta.persistence.*;
+import org.hibernate.engine.jdbc.batch.spi.Batch;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -135,19 +136,5 @@ public class Stock implements Serializable{
 
     public void setDateEntree(LocalDate dateEntree) {
         this.dateEntree = dateEntree;
-    }
-
-    @Override
-    public String toString() {
-        return "Stock{" +
-                "idStock=" + idStock +
-                ", drug=" + drug +
-                ", nameDrug='" + nameDrug + '\'' +
-                ", quantity=" + quantity +
-                ", dateExpiration=" + dateExpiration +
-                ", prixUnitaire=" + prixUnitaire +
-                ", prixTotal=" + prixTotal +
-                ", dateEntree=" + dateEntree +
-                '}';
     }
 }

@@ -41,6 +41,7 @@ public class Purchases {
 
     @Column(name = "date_purchase")
     private LocalDate dateAchat;
+
     @Column(name = "exp_date")
     private  LocalDate dateExpiration;
 
@@ -150,6 +151,7 @@ public class Purchases {
         this.dateExpiration = dateExpiration;
     }
 
+
     @Override
     public String toString() {
         return "Purchases{" +
@@ -163,6 +165,8 @@ public class Purchases {
                 ", prixAchatTotal=" + prixAchatTotal +
                 ", dateAchat=" + dateAchat +
                 ", dateExpiration=" + dateExpiration +
+                ", dateAchatFormatted='" + dateAchatFormatted + '\'' +
+                ", dateExpirationFormatted='" + dateExpirationFormatted + '\'' +
                 '}';
     }
 }

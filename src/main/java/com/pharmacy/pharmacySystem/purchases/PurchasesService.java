@@ -2,10 +2,15 @@ package com.pharmacy.pharmacySystem.purchases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pharmacy.pharmacySystem.audit.AuditService;
+import com.pharmacy.pharmacySystem.stock.Stock;
+import com.pharmacy.pharmacySystem.stock.StockRepository;
 import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +18,7 @@ import java.util.Optional;
 public class PurchasesService {
     //@Autowired private PurchasesRepository repo;
     //@Autowired private ActionsHistoryService historyService;
+    @Autowired private StockRepository stockRepo;
     private final PurchasesRepository repo;
     private final AuditService auditService;
     private final ObjectMapper objectMapper;
@@ -28,6 +34,41 @@ public class PurchasesService {
     public List<Purchases> listAll() {
         return (List<Purchases>) repo.findAllPurchasesByDatePurchaseDesc();
     }
+
+    /**@Transactional
+    public Purchases savePurchaseWithInventoryUpdate(Purchases purchase) {
+        // 1. Sauvegarder l'achat
+        Purchases savedPurchase = repo.save(purchase);
+
+        // 2. Vérifier si un batch existe déjà pour ce médicament et numéro de lot
+        Optional<Batches> existingBatch = batchesRepo.findByDrugIdAndBatchNumber(
+                purchase.getDrug().getIdDrug(),
+                purchase.getBatchNumber()
+        );
+        Batches batch;
+        if (existingBatch.isPresent()) {
+            //Batch existant - Mise à jour
+            batch = existingBatch.get();
+            batch.setQuantity(batch.getQuantity() + purchase.getQuantity());
+            batchesRepo.save(batch);
+
+            // Mettre à jour le stock correspondant
+            updateExixstingStock(batch, purchase);
+        } else {
+            //Nouveau batch - Création
+            batch = createNewBatch(purchase);
+            batchesRepo.save(batch);
+
+            // Créer une nouvelle entrée dans le stock
+            //createNewStockEntry(newBatch, purchase);
+
+            //Mettre à jour le stock (toujours incrémenter la quantité)
+            updateExixstingStock(batch,purchase);
+
+        }
+        return savedPurchase;
+    }**/
+
     @Transactional
     public Purchases save(Purchases purchase) {
         /**boolean isNew = purchase.getId() == null;
@@ -91,4 +132,25 @@ public class PurchasesService {
         );
         repo.delete(purchase);
     }
+    //SERVICE POUR LE TOTAL DES ACHATS DU JOUR
+    public BigDecimal getTodayPurchasesTotal(){
+        return repo.getTodayPurchases(LocalDate.now());
+    }
+
+    public BigDecimal getPurchasesTotalByDate(LocalDate date) {
+        return repo.getPurchasesTotalByDate(date);
+    }
+
+    public List<Purchases> getPurchasesByDate(LocalDate date) {
+        return repo.findByDateAchat(date);
+    }
+
+    /**public BigDecimal getPurchasesTotalByDate(LocalDate date) {
+        return repo.getPurchasesTotalByDate(date);
+    }
+
+    public List<Purchases> getPurchasesByDate(LocalDate date){
+        return repo.findByDateAchat(date);
+    }**/
+
 }

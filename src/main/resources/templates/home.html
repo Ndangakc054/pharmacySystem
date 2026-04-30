@@ -5,97 +5,75 @@
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Pharmacie WUTANG</title>
-   <!-- ====MATERIAL ICON=== -->
-   <!--<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
-    rel="stylesheet">-->
+   <title>Pharmacie HUMANOPHAR</title>
    <!-- ==== STYLESHEET === -->
    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
    <div class="container">
-      <aside>
-         <div class="top">
-            <div class="logo">
-               <img src="/imgs/pharmacy.png">
-               <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
-            </div>
-         </div>
-         <div class="close" id="close-btn">
-            <span class="material-icons-sharp">close</span>
-         </div>
-         <div class="sidebar">
-            <a href="#" class="active">
-               <span><img src="/imgs/grid_view.svg"></span>
-               <h3>Accueil</h3>
-            </a>
-
-            <a th:href="@{/drugs}">
-               <span><img src="/imgs/medication_liquid.svg"></span>
-               <h3>Médicaments</h3>
-            </a>
-
-            <a th:href="@{/stock}">
-               <span><img src="/imgs/inventory_2.svg"></span>
-               <h3>Inventaire</h3>
-            </a>
-
-            <a th:href="@{/sales}">
-               <span><img src="/imgs/paid.svg"></span>
-               <h3>ventes</h3>
-            </a>
-
-            <a th:href="@{/purchases}">
-               <span><img src="/imgs/inventory.svg"></span>
-               <h3>Ravitaillement</h3>
-            </a>
-
-            <a th:href="@{/orders}">
-               <span><img src="/imgs/fact_check.svg"></span>
-               <h3>commandes</h3>
-            </a>
-
-            <a th:href="@{/suppliers}">
-               <span><img src="/imgs/person_outline.svg"></span>
-               <h3>Fournisseurs</h3>
-            </a>
-
-
-            <!--<a href="#">
-                  <span><img src="/imgs/notifications.svg"></span>
-                  <h3>Notifications</h3>
-                  <span class="message-count">0</span>-->
-            </a>
-
-            <a th:href="@{/settings}">
-               <span><img src="/imgs/settings.svg"></span>
-               <h3>Paramètres</h3>
-            </a>
-
-
-            <!--<form th:action="@{/logout}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                  <button type="submit">
-                      <span class="material-icons-sharp">logout</span>
-                      <h3>Logout</h3>
-                  </button>
-               </form>-->
-
-            <form th:action="@{/logout}" method="post">
-               <button type="submit">
-                  <span><img src="/imgs/logout.svg"></span>
-                  <h3>Logout</h3>
-               </button>
-            </form>
-         </div>
-      </aside>
+      <div th:replace="~{fragments :: sidebarAdmin(activeLink='home')}"></div>
       <!---------------------- END OF ASIDE -------------------------->
       <main>
          <h1>Accuiel</h1>
          <div class="date">
             <input type="date">
          </div>
+         <div class="insigths">
+            <div class="sales">
+               <div class="middle">
+                  <div class="left">
+                     <h3>Nombres de factures</h3>
+                     <h1 th:text="${nbInvoices} + ' Factures'">0 Factures</h1>
+                  </div>
+               </div>
+               <small class="text-muted">Dernières 24 heures</small>
+            </div>
+
+            <div class="expenses">
+               <div class="middle">
+                  <div class="left">
+                     <h3>Ventes effectuées</h3>
+                     <h1 th:text="${nbSales} + ' Ventes'">0 Ventes</h1>
+                  </div>
+               </div>
+               <small class="text-muted">Dernières 24 heures</small>
+            </div>
+
+            <div class="income">
+               <div class="middle">
+                  <div class="left">
+                     <h3>Achats effectués</h3>
+                     <h1 th:text="${nbPurchases} + ' Achats'">0 Achats</h1>
+                  </div>
+               </div>
+               <small class="text-muted">Dernières 24 heures</small>
+            </div>
+         </div>
+         <!--<div class="analytics-container">
+            <div class="item customers">
+               <div class="icon">
+                  <span><img src="/imgs/add_shopping_cart.svg" alt=""></span>
+               </div>
+               <div class="right">
+                  <div class="info">
+                     <h2>Ventes effectuées</h2>
+                     <h2 class="success">39</h2>
+                  </div>
+               </div>
+            </div>
+            <div class="item online">
+               <div class="icon">
+                  <span><img src="/imgs/shopping_cart_checkout.svg" alt=""></span>
+               </div>
+               <div class="right">
+                  <div class="info">
+                     <h2>Achats des médicaments</h2>
+                     <h2 class="success">39</h2>
+                  </div>
+               </div>
+            </div>
+         </div>-->
          <!--<div class="insigths">
                <div class="sales">
                   <span class="material-icons-sharp">analytics</span>
@@ -157,55 +135,21 @@
          <!--</div> --->
          <!---------------------- END OF INSIGTHS -------------------------->
          <div class="recent-orders">
-            <h2>Recent Orders</h2>
+            <h2>Médicaments les plus vendus</h2>
             <table>
                <thead>
-                  <tr>
-                     <th>Product Name</th>
-                     <th>Product Number</th>
-                     <th>Payment</th>
-                     <th>Status</th>
-                  </tr>
+               <tr>
+                  <th>Nom du Médicament</th>
+                  <th>Quantité totale vendue</th>
+               </tr>
                </thead>
                <tbody>
-                  <tr>
-                     <td>Fordable Mini Drone</td>
-                     <td>85631</td>
-                     <td>Due</td>
-                     <td class="warning">Pending</td>
-                     <td class="primary">Details</td>
-                  </tr>
+               <tr th:each="item : ${topDrugs}">
+                  <td th:text="${item[0]}">Nom</td>
+                  <td class="warning" th:text="${item[1]}">0</td>
+               </tr>
                </tbody>
-               <tr>
-                  <td>Fordable Mini Drone</td>
-                  <td>85631</td>
-                  <td>Due</td>
-                  <td class="warning">Pending</td>
-                  <td class="primary">Details</td>
-               </tr>
-               <tr>
-                  <td>Fordable Mini Drone</td>
-                  <td>85631</td>
-                  <td>Due</td>
-                  <td class="warning">Pending</td>
-                  <td class="primary">Details</td>
-               </tr>
-               <tr>
-                  <td>Fordable Mini Drone</td>
-                  <td>85631</td>
-                  <td>Due</td>
-                  <td class="warning">Pending</td>
-                  <td class="primary">Details</td>
-               </tr>
-               <tr>
-                  <td>Fordable Mini Drone</td>
-                  <td>85631</td>
-                  <td>Due</td>
-                  <td class="warning">Pending</td>
-                  <td class="primary">Details</td>
-               </tr>
             </table>
-            <a href="#">Show All</a>
          </div>
       </main>
       <!---------------------- END OF MAIN -------------------------->
@@ -229,8 +173,8 @@
             </div>
          </div>
          <!-- END OF TOP -->
-         <div class="recent-updates">
-            <!--<h2>Recent Updates</h2>
+         <!--<div class="recent-updates">
+            <h2>Recent Updates</h2>
             <div class="updates">
                <div class="profile-photo">
                   <img src="/imgs/1.jpg" alt="">
@@ -257,56 +201,62 @@
                   <p><b>Unkown excute the orders succefully</b></p>
                   <small class="text-muted">2 Minutes Ago</small>
                </div>
-            </div>-->
-         </div>
+            </div>
+         </div>-->
          <!----------- END OF RECENT UPDATES -------->
          <div class="sales-analytics">
             <h2>Sales Analytics</h2>
             <div class="item customers">
                <div class="icon">
-                  <span class="material-icons-sharp">person</span>
+                  <span><img src="/imgs/add_shopping_cart.svg" alt=""></span>
                </div>
                <div class="right">
                   <div class="info">
-                     <h3>NEW CUSTOMERS</h3>
-                     <small class="text-muted">Last 24 Hours</small>
+                     <h2>Ventes effectuées</h2>
+                     <h2>
+                        <span th:text="${todaySalesTotal}">0.00</span>
+                        <span class="danger">Fbu</span>
+                    </h2>
+                     <!--<h2 class="success"><span class="danger">$</span></h2>-->
                   </div>
-                  <h5 class="success">+39</h5>
-                  <h3>849</h3>
                </div>
             </div>
             <div class="item online">
                <div class="icon">
-                  <span class="material-icons-sharp">shopping_cart</span>
+                  <span><img src="/imgs/shopping_cart_checkout.svg" alt=""></span>
                </div>
                <div class="right">
                   <div class="info">
-                     <h3>ONLINE ORDERS</h3>
-                     <small class="text-muted">Last 24 Hours</small>
+                     <h2>Achats des médicaments</h2>
+                     <h2>
+                        <span th:text="${todayPurchasesTotal}">0.00</span>
+                        <span class="danger">Fbu</span>
+                     </h2>
                   </div>
-                  <h5 class="success">+39</h5>
-                  <h3>3849</h3>
                </div>
             </div>
             <div class="item offline">
                <div class="icon">
-                  <span class="material-icons-sharp">local_mall</span>
+                  <span><img src="/imgs/bar_chart.svg" alt=""></span>
                </div>
                <div class="right">
                   <div class="info">
-                     <h3>OFFLINE ORDERS</h3>
-                     <small class="text-muted">Last 24 Hours</small>
+                     <h2>Stock inventorié</h2>
+                     <h2>
+                        <span th:text="${totalInventory}">0.00</span>
+                        <span class="danger">Fbu</span>
+                     </h2>
                   </div>
-                  <h5 class="success">-17%</h5>
-                  <h3>1100</h3>
+                  <!--<h5 class="success">-17%</h5>
+                  <h3>1100</h3>-->
                </div>
             </div>
-            <div class="item add-product">
+            <!--<div class="item add-product">
                <div>
                   <span class="material-icons-sharp">add</span>
                   <h3>Add Product</h3>
                </div>
-            </div>
+            </div>-->
          </div>
       </div>
    </div>

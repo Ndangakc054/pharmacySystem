@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacie WUTANG</title>
+    <title>Pharmacie HUMANOPHAR</title>
     <!-- ====MATERIAL ICON=== -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
     rel="stylesheet">
@@ -17,65 +17,7 @@
 
    <body>
       <div class="container">
-         <aside>
-            <div class="top">
-               <div class="logo">
-                  <img src="/imgs/pharmacy.png">
-                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
-               </div>
-            </div>
-            <div class="close" id="close-btn">
-               <span class="material-icons-sharp">close</span>
-            </div>
-            <div class="sidebar">
-               <a th:href="@{/home}">
-                  <span><img src="/imgs/grid_view.svg"></span>
-                  <h3>Accueil</h3>
-               </a>
-               
-               <a th:href="@{/drugs}">
-                  <span><img src="/imgs/medication_liquid.svg"></span>
-                  <h3>Médicaments</h3>
-               </a>
-   
-               <a th:href="@{/stock}" class="active">
-                  <span><img src="/imgs/inventory_2.svg"></span>
-                  <h3>Inventaire</h3>
-               </a>
-   
-               <a th:href="@{/sales}">
-                  <span><img src="/imgs/paid.svg"></span>
-                  <h3>Ventes</h3>
-               </a>
-   
-               <a th:href="@{/purchases}">
-                  <span><img src="/imgs/inventory.svg"></span>
-                  <h3>Ravitaillement</h3>
-               </a>
-   
-               <a th:href="@{/orders}">
-                  <span><img src="/imgs/fact_check.svg"></span>
-                  <h3>commandes</h3>
-               </a>
-   
-               <a th:href="@{/suppliers}">
-                  <span><img src="/imgs/person_outline.svg"></span>
-                  <h3>Fournisseurs</h3>
-               </a>
-   
-               <a th:href="@{/settings}">
-                  <span><img src="/imgs/settings.svg"></span>
-                  <h3>Paramètres</h3>
-               </a>
-   
-               <form th:action="@{/logout}" method="post">
-                  <button type="submit">
-                     <span><img src="/imgs/logout.svg"></span>
-                     <h3>Logout</h3>
-                  </button>
-               </form>
-            </div>
-         </aside>
+         <div th:replace="~{fragments :: sidebarAdmin(activeLink='stock')}"></div>
          <!---------------------- END OF ASIDE -------------------------->
          <main>
             <h1>Stock</h1>
@@ -96,8 +38,10 @@
                         <!--<h2>Ajouter un nouveau médicaments</h2>-->
                      </div>
                        <form th:action="@{/stock/update}" method="post" th:object="${stock}" id="drugForm">
-                        <!-- Champ caché pour transmettre l'Id -->
-                        <input type="hidden"  th:field="*{idStock}">
+                           <!-- Champ caché pour transmettre l'Id -->
+                           <input type="hidden"  th:field="*{idStock}">
+                           <!-- Champ caché pour le batch ID -->
+                           <!--<input type="hidden" th:field="*{batch}">-->
 
                           <div class="form-group">
                            <label>Médicament:</label>
@@ -112,7 +56,7 @@
                           </div>
                           <div class="form-group">
                              <label for="drugQuantity">Quantité:</label>
-                             <input type="text" name="drugQuantity" id="drugQuantity" th:field="*{quantity}" maxlength="25" required>
+                             <input type="number" name="drugQuantity" id="drugQuantity" step="1" min="0" max="200" th:field="*{quantity}" maxlength="11" required>
                           </div>
                           <div class="form-group">
                              <label for="drugDate">Date d'expiration:</label>

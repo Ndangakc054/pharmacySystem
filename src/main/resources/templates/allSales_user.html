@@ -1,0 +1,109 @@
+   <!DOCTYPE html>
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacie HUMANOPHAR</title>--->
+    <!-- ==== STYLESHEET === -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="htp" rel="stylesheet">
+   </head>
+
+   <body>
+      <div class="container">
+         <div th:replace="~{fragments :: sidebarUser(activeLink='sales_user')}"></div>
+         <!---------------------- END OF ASIDE -------------------------->
+         <main>
+            <h1>Listes de tout les ventes validées</h1>
+            <!--<div class="date">
+               <input type="date" id="datePicker" th:value="${selectedDate}" onchange="filterByDate()">
+            </div>-->
+            <!-----------------END OF FORM------------------>
+            <div class="recent-sales">
+               <div class="title-with-pack">
+                  <a th:href="@{/recentSales_user}" class="back-icon">
+                     <span><img src="/imgs/arrow_back.svg" alt=""></span>
+                  </a>
+               </div>
+               <h2>Liste </h2>
+               <table>
+                  <thead>
+                     <tr>
+                        <th>Nom</th>
+                        <th>Quantité</th>
+                        <th>Prix unitaire</th>
+                        <th>Prix total</th>
+                        <th>Validé par</th>
+                        <th>Date de vente</th>
+                     </tr>
+                  </thead>
+                  <tbody id="salesTableBody">
+                     <tr th:each="sale : ${listSales}" th:data-sale-id="${sale.idSale}">
+                        <td>[[${sale.drug.nameDrug}]]</td>
+                        <td>[[${sale.quantity}]]</td>
+                        <td>[[${sale.prixUnitaire}]]</td>
+                        <td>[[${sale.prixTotal}]]</td>
+                        <td>[[${sale.user.nomUtilisateur}]]</td>
+                        <td th:text="${#temporals.format(sale.dateVente, 'dd/MM/yyyy HH:mm')}"></td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </main>
+         <!---------------------- END OF MAIN -------------------------->
+         <div class="rigth">
+            <div class="top">
+               <button id="menu-btn">
+                  <span class="material-icons-sharp">menu</span>
+               </button>
+               <div class="theme-toggler">
+                  <span><img src="/imgs/light_mode.svg"></span>
+                  <span><img src="/imgs/dark_mode.svg"></span>
+               </div>
+               <div class="profile" id="profileTrigger" style="cursor: pointer;">
+                  <div class="info" th:if="${loggedUser != null}">
+                     <p><b th:text="${loggedUser?.nomUtilisateur}">Nom</b></p>
+                     <small class="text-muted" th:text="${loggedUser?.type}">Role</small>
+                  </div>
+
+                  <div class="profile-photo">
+                     <img src="/imgs/profile-1.jpg" alt="">
+                  </div>
+
+                  <div id="user-popup" class="user-popup" style="display: none;" th:if="${loggedUser != null}">
+                     <div class="popup-header">
+                        <h3 th:text="${loggedUser.nomUtilisateur}">Nom</h3>
+                        <p th:text="${loggedUser.type}">Role</p>
+                     </div>
+                     <hr>
+                     <div class="popup-body">
+                        <a th:href="@{/profile/edit/{id}(id=${loggedUser.Id})}" class="edit-link">
+                           <span><img src="/imgs/manage_accounts.svg"></span>
+                           Modifier votre profil
+                        </a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div th:if="${message}" id="notification-modal" class="modal-notification"
+           th:classappend="${status == 'success' ? 'success' : 'error'}">
+
+         <div class="modal-content">
+        <span class="icon">
+            <i class="material-icons-sharp" th:text="${status == 'success' ? 'message' : 'error'}"></i>
+        </span>
+
+            <span class="msg-text" th:text="${message}"></span>
+
+            <div class="progress-bar"></div>
+
+            <span class="close-btn">&times;</span>
+         </div>
+      </div>
+      <script src="/js/main.js" defer></script>
+   </body>
+   </html>

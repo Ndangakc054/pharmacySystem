@@ -1,6 +1,7 @@
 package com.pharmacy.pharmacySystem.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -68,10 +69,26 @@ public class UsersController {
             return "editUser";
         }
     }
+
+    /**@GetMapping("users/edit/{Id}")
+    public String showEditProfileForm(@PathVariable("Id") Integer Id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Users user = service.get(Id);
+            model.addAttribute("user", user);
+            return  "editProfile";
+        } catch (UsersNotFoundException e) {
+            redirectAttributes.addFlashAttribute("status", "error");
+            redirectAttributes.addFlashAttribute("message", "L'utilisateur n'existe pas");
+            return "editProfile";
+        }
+    }**/
+
     @PostMapping("/users/update")
-    public String updateUser(@ModelAttribute("user") @Validated Users user, BindingResult result, RedirectAttributes redirectAttributes, Principal principal, Model model) {
+    public String updateUser(@ModelAttribute("user") @Validated Users user, BindingResult result, RedirectAttributes redirectAttributes,
+                             Principal principal, Model model) {
         if (result.hasErrors()) {
             System.out.println("Erreur de validation : "+result.getAllErrors());
+
             return "editUser";
         }
         try {
@@ -86,23 +103,83 @@ public class UsersController {
                 model.addAttribute("loggedUser", updatedUSer.get());
             }
             redirectAttributes.addFlashAttribute("status", "success");
-            redirectAttributes.addFlashAttribute("message", "La modification de l'utilisateur est effectué avec succès");
+            redirectAttributes.addFlashAttribute("message", "La modification de l'utilisateur est effectuée avec succès");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("status", "error");
             redirectAttributes.addFlashAttribute("message", "Echec  de la modification");
         }
+
         return "redirect:/users";
     }
+
+    @GetMapping("/profile/edit/{id}")
+    public String showProfileForm(@PathVariable("id") Integer id, Model model) {
+        try {
+            // On récupère l'utilisateur par l'ID passé dans le lien
+            Users user = service.get(id);
+
+            // On l'ajoute au modèle sous le nom "user" pour que th:object l'utilise
+            model.addAttribute("user", user);
+
+            return "editProfile"; // Affiche ta page editProfile.html
+        } catch (UsersNotFoundException e) {
+            return "redirect:/home_user";
+        }
+    }
+
+    @PostMapping("/profile/update")
+    public String updateProfile(@ModelAttribute("user") Users user, RedirectAttributes ra) {
+        try {
+            // On sauvegarde les modifications (Nom, Mot de passe)
+            service.save(user);
+            ra.addFlashAttribute("status", "success");
+            ra.addFlashAttribute("message", "Votre profil a été mis à jour !");
+            return "redirect:/home_user";
+        } catch (Exception e) {
+            ra.addFlashAttribute("status", "error");
+            ra.addFlashAttribute("message", "Erreur lors de la mise à jour");
+            return "redirect:/profile/edit/" + user.getId();
+        }
+        //return "redirect:/home_user";
+    }
+
+    /**@GetMapping("/profile/edit/{idUser}")
+    public String showProfileForm(@PathVariable("id") Integer id, Principal principal, Model model) {
+        String username = principal.getName();
+        Users user = service.findByUsername(username).orElseThrow();
+        model.addAttribute("user", user);
+        return "editProfile"; // Une page dédiée ou une section
+    }
+
+    @PostMapping("/profile/update")
+    public String updateProfile(@ModelAttribute("user") Users user, Principal principal, RedirectAttributes ra) {
+        try {
+            // Sécurité : on s'assure que l'utilisateur ne modifie que son propre compte
+            service.save(user);
+            ra.addFlashAttribute("status", "success");
+            ra.addFlashAttribute("message", "Profil mis à jour !");
+        } catch (Exception e) {
+            ra.addFlashAttribute("status", "error");
+            ra.addFlashAttribute("message", "Erreur lors de la mise à jour");
+        }
+        return "redirect:/home_user"; // Redirige vers l'accueil
+    }**/
+
     @GetMapping("users/delete/{Id}")
     public String deleteUser(@PathVariable("Id") Integer Id, RedirectAttributes redirectAttributes){
         try {
             service.delete(Id);
             redirectAttributes.addFlashAttribute("status","success");
-            redirectAttributes.addFlashAttribute("message","L'utilisateur a été supprimer avec succès !");
+            redirectAttributes.addFlashAttribute("message","Suppression de l'utilisateur effectuée !");
         } catch (UsersNotFoundException e) {
             redirectAttributes.addFlashAttribute("status", "error");
             redirectAttributes.addFlashAttribute("message", "L'utilisateur n'existe pas !");
         }
         return "redirect:/users";
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
     }
 }

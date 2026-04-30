@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacie WUTANG</title>
+    <title>Pharmacie HUMANOPHAR</title>
     <!-- ====MATERIAL ICON=== -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
     rel="stylesheet">
@@ -17,77 +17,21 @@
 
    <body>
       <div class="container">
-         <aside>
-            <div class="top">
-               <div class="logo">
-                  <img src="/imgs/pharmacy.png">
-                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
-               </div>
-            </div>
-            <div class="close" id="close-btn">
-               <span class="material-icons-sharp">close</span>
-            </div>
-            <div class="sidebar">
-               <a th:href="@{/home}">
-                  <span><img src="/imgs/grid_view.svg"></span>
-                  <h3>Accueil</h3>
-               </a>
-               
-               <a th:href="@{/drugs}">
-                  <span><img src="/imgs/medication_liquid.svg"></span>
-                  <h3>Médicaments</h3>
-               </a>
-   
-               <a th:href="@{/stock}">
-                  <span><img src="/imgs/inventory_2.svg"></span>
-                  <h3>Inventaire</h3>
-               </a>
-   
-               <a th:href="@{/sales}" class="active">
-                  <span><img src="/imgs/paid.svg"></span>
-                  <h3>Ventes</h3>
-               </a>
-   
-               <a th:href="@{/purchases}">
-                  <span><img src="/imgs/inventory.svg"></span>
-                  <h3>Ravitaillement</h3>
-               </a>
-   
-               <a th:href="@{/orders}">
-                  <span><img src="/imgs/fact_check.svg"></span>
-                  <h3>commandes</h3>
-               </a>
-   
-               <a th:href="@{/suppliers}">
-                  <span><img src="/imgs/person_outline.svg"></span>
-                  <h3>Fournisseurs</h3>
-               </a>
-   
-               <a th:href="@{/settings}">
-                  <span><img src="/imgs/settings.svg"></span>
-                  <h3>Paramètres</h3>
-               </a>
-   
-               <form th:action="@{/logout}" method="post">
-                  <button type="submit">
-                     <span><img src="/imgs/logout.svg"></span>
-                     <h3>Logout</h3>
-                  </button>
-               </form>
-            </div>
-         </aside>
+         <div th:replace="~{fragments :: sidebarAdmin(activeLink='sales')}"></div>
          <!---------------------- END OF ASIDE -------------------------->
          <main>
-            <h1>Listes des ventes effectués</h1>
+            <h1>Listes des ventes effectuées</h1>
             <div class="date">
-               <input type="date">
+               <input type="date" id="datePicker" th:value="${selectedDate}" onchange="filterByDate()">
             </div>
-            <div class="insigths">
+
+            <div class="show-sale">
+               <a class="sale-link" th:href="@{/allSales}">
+                  <!--<span><img src="/imgs/price_check.svg"></span>-->
+                  <h3>Liste de toutes les ventes</h3>
+               </a>
             </div>
-            <div th:if="${message}"
-               th:classappend="${status == 'success'} ? 'alert alert-success text-center' : 'alert alert-danger text-center'">
-               [[${message}]]
-            </div>
+
             <!-----------------END OF FORM------------------>
             <div class="recent-sales">
                <div class="title-with-pack">
@@ -95,7 +39,17 @@
                      <span><img src="/imgs/arrow_back.svg" alt=""></span>
                   </a>
                </div>
-               <h2>Liste </h2>
+
+               <div class="filter-container">
+                  <div class="table-title">
+                     <h2>Liste des ventes</h2>
+                  </div>
+                  <button class="action-button">
+                     <a th:href="@{/sales/export/pdf(date=${selectedDate})}" target="_blank">
+                        Générer le rapport
+                     </a>
+                  </button>
+               </div>
                <table>
                   <thead>
                      <tr>
@@ -103,11 +57,13 @@
                         <th>Quantité</th>
                         <th>Prix unitaire</th>
                         <th>Prix total</th>
-                        <th>Validé par</th>
+                        <th>Validée par</th>
                         <th>Date de vente</th>
+                        <th></th>
+                        <th></th>
                      </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="salesTableBody">
                      <tr th:each="sale : ${listSales}" th:data-sale-id="${sale.idSale}">
                         <td>[[${sale.drug.nameDrug}]]</td>
                         <td>[[${sale.quantity}]]</td>
@@ -115,6 +71,20 @@
                         <td>[[${sale.prixTotal}]]</td>
                         <td>[[${sale.user.nomUtilisateur}]]</td>
                         <td th:text="${#temporals.format(sale.dateVente, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                           <a th:href="@{|/sales/edit/${sale.idSale}|}">
+                              <span class="edit-icon">Éditer</span>
+                           </a>
+                        </td>
+                        <td>
+                           <a th:href="@{|/sales/delete/${sale.idSale}|}"
+                              onclick="return confirm('Voulez-vous vraiment supprimer cette vente ?')">
+                              <span class="delete-icon">Supprimer</span>
+                           </a>
+                        </td>
+                     </tr>
+                     <tr th:if="${#lists.isEmpty(listSales)}">
+                        <td colspan="8" style="text-align:center;">Aucune vente trouvée pour cette date.</td>
                      </tr>
                   </tbody>
                </table>
@@ -127,11 +97,11 @@
                   <span class="material-icons-sharp">menu</span>
                </button>
                <div class="theme-toggler">
-                  <span class="active"><img src="/imgs/light_mode.svg"></span>
+                  <span><img src="/imgs/light_mode.svg"></span>
                   <span><img src="/imgs/dark_mode.svg"></span>
                </div>
                <div class="profile">
-                  <div class="info">
+                  <div class="info" th:if="${loggedUser != null}">
                      <p><b th:text="${loggedUser.nomUtilisateur}">Nom</b></p>
                      <small class="text-muted" th:text="${loggedUser.type}">Role</small>
                   </div>
@@ -139,7 +109,41 @@
                      <img src="/imgs/profile-1.jpg" alt="">
                   </div>
                </div>
-            </div>          
+            </div>
+            <!-- END OF TOP -->
+            <!----------- END OF RECENT UPDATES -------->
+            <div class="sales-analytics">
+               <div class="item customers">
+                  <div class="icon">
+                     <span><img src="/imgs/add_shopping_cart.svg" alt=""></span>
+                  </div>
+                  <div class="right">
+                     <div class="info">
+                        <h2>Total des Ventes</h2>
+                        <h2>
+                           <span id="dailyTotal" th:text="${todaySalesTotal}">0.00</span>
+                           <span class="danger">Fbu</span>
+                       </h2>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div th:if="${message}" id="notification-modal" class="modal-notification"
+           th:classappend="${status == 'success' ? 'success' : 'error'}">
+
+         <div class="modal-content">
+        <span class="icon">
+            <i class="material-icons-sharp" th:text="${status == 'success' ? 'message' : 'error'}"></i>
+        </span>
+
+            <span class="msg-text" th:text="${message}"></span>
+
+            <div class="progress-bar"></div>
+
+            <span class="close-btn">&times;</span>
          </div>
       </div>
       <script src="/js/main.js" defer></script>

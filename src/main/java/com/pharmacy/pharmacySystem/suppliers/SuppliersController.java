@@ -89,9 +89,9 @@ public class SuppliersController {
             service.save(supplier);
             redirectAttributes.addFlashAttribute("status", "success");
             redirectAttributes.addFlashAttribute("message", "La modification du fournisseur est effectué avec succès");
-        }catch (SuppliersNotFoundException e){
+        } catch (SuppliersNotFoundException e){
             redirectAttributes.addFlashAttribute("status", "error");
-            redirectAttributes.addFlashAttribute("message", "La modification à échoué");
+            redirectAttributes.addFlashAttribute("message", "La modification a échoué");
         }
         return "redirect:/suppliers";
     }
@@ -100,7 +100,7 @@ public class SuppliersController {
         try{
             service.delete(idSupplier);
             redirectAttributes.addFlashAttribute("status","success");
-            redirectAttributes.addFlashAttribute("message","La suppression effectuée avec succès");
+            redirectAttributes.addFlashAttribute("message","Fournisseur supprimé(e)");
         }catch (SuppliersNotFoundException e) {
             redirectAttributes.addFlashAttribute("status","error");
             redirectAttributes.addFlashAttribute("message","Une erreur est survenue lors de la suppression.");

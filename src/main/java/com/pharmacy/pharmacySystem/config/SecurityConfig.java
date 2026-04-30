@@ -52,11 +52,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests( auth -> auth
                         .requestMatchers("/loginPage", "/css/**","/js/**","/imgs/**").permitAll()
                         .requestMatchers("/home","/drugs", "/editDrug","/stock",
-                                "/editDrugStock","/expiry","/sales","/recentSales","/purchases","/editPurchase",
+                                "/editDrugStock","/expiry","/sales","/recentSales","allSales","/purchases","all_purchases","/editPurchase",
                                 "/orders","/suppliers","/editSupplier","/settings","/users","addUser","editUser",
                                 "/invoicesPage","/history","/historyDetails/**","/loginHistory/**").hasRole("ADMIN")
                         .requestMatchers("home_user","/drugs_user","/stock_user","/expiry_user","/sales_user","/recentSales_user",
-                                "/purchases_user","/orders_user", "/suppliers_user/**").hasRole("USER")
+                                "/purchases_user","/orders_user","allSales_user","all_purchases_user","/suppliers_user/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET,"addDrug","/addDrugStock","/addPurchase","/addSupplier/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,"/addDrug","/addDrugStock","/addPurchase","/addSupplier/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.GET,"addDrug_user","/addDrugStock_user","addPurchase_user","addSupplier_user/**").hasRole("USER")
@@ -109,8 +109,8 @@ public class SecurityConfig {
     }
 
     // Gestionnaire de succès de login
-    private AuthenticationSuccessHandler authenticationSuccessHandler() {
-        return (request, response, authentication) -> {
+        private AuthenticationSuccessHandler authenticationSuccessHandler() {
+            return (request, response, authentication) -> {
             String username = authentication.getName();
             Users user = usersRepo.findByNomUtilisateur(username)
                     .orElseThrow(()-> new EntityNotFoundException("Utilisateur non trouvé"));

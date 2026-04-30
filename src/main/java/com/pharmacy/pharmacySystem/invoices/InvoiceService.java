@@ -21,7 +21,7 @@ public class InvoiceService {
 
 
     public List<Invoices> listAll() {
-        return (List<Invoices>) repo.findAll();
+        return (List<Invoices>) repo.findAllInvoicesByDateSaleDesc();
     }
     public Invoices getInvoiceById(Integer id) {
         return repo.findById(id)

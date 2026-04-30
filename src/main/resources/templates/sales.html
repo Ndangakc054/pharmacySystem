@@ -4,87 +4,32 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Pharmacie WUTANG</title>
-    <!-- ====MATERIAL ICON=== -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
-    rel="stylesheet">
+   <title>Pharmacie HUMANOPHAR</title>
     <!-- ==== STYLESHEET === -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
    </head>
 
    <body>
       <div class="container">
-         <aside>
-            <div class="top">
-               <div class="logo">
-                  <img src="/imgs/pharmacy.png">
-                  <h2>PHARMACIE<span class="danger">WUTANG</span></h2>
-               </div>
-            </div>
-            <div class="close" id="close-btn">
-               <span class="material-icons-sharp">close</span>
-            </div>
-            <div class="sidebar">
-               <a th:href="@{/home}">
-                  <span><img src="/imgs/grid_view.svg"></span>
-                  <h3>Accueil</h3>
-               </a>
-               
-               <a th:href="@{/drugs}">
-                  <span><img src="/imgs/medication_liquid.svg"></span>
-                  <h3>Médicaments</h3>
-               </a>
-   
-               <a th:href="@{/stock}">
-                  <span><img src="/imgs/inventory_2.svg"></span>
-                  <h3>Inventaire</h3>
-               </a>
-   
-               <a th:href="@{/sales}" class="active">
-                  <span><img src="/imgs/paid.svg"></span>
-                  <h3>Ventes</h3>
-               </a>
-   
-               <a th:href="@{/purchases}">
-                  <span><img src="/imgs/inventory.svg"></span>
-                  <h3>Ravitaillement</h3>
-               </a>
-   
-               <a th:href="@{/orders}">
-                  <span><img src="/imgs/fact_check.svg"></span>
-                  <h3>commandes</h3>
-               </a>
-   
-               <a th:href="@{/suppliers}">
-                  <span><img src="/imgs/person_outline.svg"></span>
-                  <h3>Fournisseurs</h3>
-               </a>
-   
-               <a th:href="@{/settings}">
-                  <span><img src="/imgs/settings.svg"></span>
-                  <h3>Paramètres</h3>
-               </a>
-   
-               <form th:action="@{/logout}" method="post">
-                  <button type="submit">
-                     <span><img src="/imgs/logout.svg"></span>
-                     <h3>Logout</h3>
-                  </button>
-               </form>
-            </div>
-         </aside>
+         <div th:replace="~{fragments :: sidebarAdmin(activeLink='sales')}"></div>
          <!---------------------- END OF ASIDE -------------------------->
          <main>
             <h1>Ventes et facturation</h1>
             <div class="date">
                <input type="date">
             </div>
-            <div class="insigths"></div>
+            <div class="show-sale">
+               <a class="sale-link" th:href="@{/recentSales}">
+                  <!--<span><img src="/imgs/price_check.svg"></span>-->
+                  <h3>Ventes validées</h3>
+               </a>
+            </div>
             <div class="stock-container">
                <div class="search-container">
                   <span class="search-icon" onclick="toggleSearch()"><img src="/imgs/search.svg"></span>
                      <input type="search" id="searchInput" class="search-input" placeholder="Recherchez ici..." onkeyup="filterTable()">
                </div>
+
                <table>
                   <thead>
                      <tr>
@@ -137,38 +82,6 @@
             <!-- INVOICE -->
             <div class="invoice-container">
                <h2>Facture :</h2>
-               <!--<form id="salesForm" action="/sales/save" method="post" th:object="${salesForm}">
-                  <table>
-                     <thead>
-                        <tr>
-                           <th>Name</th>
-                           <th>Quantity</th>
-                           <th>Unit_price</th>
-                           <th>Total</th>      
-                        </tr>
-                     </thead>
-                     <tbody id="invoice-body">
-                        <tr th:each="item, itemStat : *{items}">
-                           <td><input type="text" th:field="*{items[__${itemStat.index}__].drugName}"></td>
-                           <td><input type="number" th:field="*{items[__${itemStat.index}__].quantity}"></td>
-                           <td><input type="number" th:field="*{items[__${itemStat.index}__].unitPrice}"></td>
-                           <td><input type="number" th:field="*{items[__${itemStat.index}__].totalAmount}"></td>
-                        </tr>
-                     </tbody>
-                  </table>
-                  <input type="hidden" th:field="*{userId}">
-                  <input type="hidden" th:field="*{dateVente}">
-                  <div class="invoice-buttons">
-                     <button type="submit" id="validate-invoice">
-                        <span class="material-icons-sharp">check_circle</span>
-                        <h3>Valider</h3>
-                     </button>
-                     <button id="print-invoice">
-                        <span class="material-icons-sharp">print</span>
-                        <h3>Imprimer</h3>
-                     </button>
-                  </div>
-               </form>-->
                <form id="salesForm">
                   <table>
                      <thead>
@@ -182,6 +95,13 @@
                      <tbody id="invoice-body">
                         <!--Place for drugs added-->
                      </tbody>
+                     <tfoot>
+                     <tr class="total-row">
+                        <td colspan="2" class="total-label">TOTAL À PAYER :</td>
+                        <td id="grand-total">0.00</td>
+                        <td class="currency">Fbu</td>
+                     </tr>
+                     </tfoot>
                   </table>
                   <div class="invoice-info">
                      <p>
@@ -192,19 +112,13 @@
                      <p><strong>Date vente :</strong><span id="sale-date"></span></p>
                   </div>
                   <div class="invoice-buttons">
-                     <button type="button" id="validate-invoice">
+                     <button type="button" id="validate-invoice" onclick="return confirm('Voulez-vous vraiment valider cette facture ?')">
                         <span><img src="/imgs/check_circle.svg"></span>
                         <h3>Valider</h3>
                      </button>
                   </div>
                </form>
                
-            </div>
-            <div class="show-sales">
-               <a th:href="@{/recentSales}">
-                  <span><img src="/imgs/price_check.svg"></span>
-                  <h3>Ventes Validées</h3>
-               </a>    
             </div>
             <div class="recent-updates"></div>
          </div>

@@ -22,6 +22,7 @@ public class UsersService {
     public List<Users> listAll() {
         return  (List<Users>)  repo.findAll();
     }
+
     public void save(Users user) {
         boolean isNew = user.getId() == null;
         if (!user.getMotDePasse().startsWith("$2a$")){
